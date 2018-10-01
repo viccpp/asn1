@@ -1,16 +1,16 @@
 // Internal implementation header
 //
 // Platform: ISO C++ 11
-// $Id: der_pc_traits.h 1041 2013-08-29 14:10:27Z vdyachenko $
+// $Id$
 
-#ifndef __MFISOFT_JANUARY_ASN1_IMPL_DER_PC_TRAITS_H
-#define __MFISOFT_JANUARY_ASN1_IMPL_DER_PC_TRAITS_H
+#ifndef __VIC_ASN1_IMPL_DER_PC_TRAITS_H
+#define __VIC_ASN1_IMPL_DER_PC_TRAITS_H
 
-#include<mfisoft/january/asn1/ber.h>
-#include<mfisoft/january/asn1/types.h>
+#include<__vic/asn1/ber.h>
+#include<__vic/asn1/types.h>
 #include<type_traits>
 
-namespace mfisoft { namespace january { namespace ASN1 { namespace impl {
+namespace __vic { namespace ASN1 { namespace impl {
 
 //----------------------------------------------------------------------------
 template<class... Args>
@@ -48,6 +48,6 @@ template<class T> constexpr bool is_der_constructed()
 { return BER::is_constructed(der_constructness<T>()); }
 //----------------------------------------------------------------------------
 
-}}}} // namespace
+}}} // namespace
 
 #endif // header guard

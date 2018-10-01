@@ -15,16 +15,14 @@ OBJS := $(SOURCES:.cpp=.o)
 .SUFFIXES: .cpp .o
 
 $(LIBNAME): $(OBJS)
-	@rm -f *.o
-	$(foreach f,$?,ln $f $(subst /,_,$f) &&) $(AR) r$(ARFLAGS) $@ *.o
-	@rm -f *.o
+	$(AR) r$(ARFLAGS) $@ $(OBJS)
 
 .cpp.o:
 	$(CC) -c -I../include -I. @CFLAGS@ $(CFLAGS) -o $@ $<
 
 .PHONY: install clean
 
-include install.mk
+#include install.mk
 
 clean:
 	rm -f $(LIBNAME) $(OBJS) *.o

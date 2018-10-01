@@ -1,18 +1,18 @@
 // Primitives for ASN.1 BER decoding
 //
 // Platform: ISO C++ 98 / 11
-// $Id: ber_decoder.h 833 2013-03-21 13:23:51Z vdyachenko $
+// $Id$
 
-#ifndef __MFISOFT_JANUARY_ASN1_BER_DECODER_H
-#define __MFISOFT_JANUARY_ASN1_BER_DECODER_H
+#ifndef __VIC_ASN1_BER_DECODER_H
+#define __VIC_ASN1_BER_DECODER_H
 
-#include<mfisoft/january/asn1/ber.h>
-#include<mfisoft/january/string_buffer.h>
-#include<mfisoft/january/error.h>
+#include<__vic/asn1/ber.h>
+#include<__vic/string_buffer.h>
+#include<__vic/error.h>
 #include<algorithm>
 #include<vector>
 
-namespace mfisoft { namespace january { namespace ASN1 { namespace BER {
+namespace __vic { namespace ASN1 { namespace BER {
 
 //////////////////////////////////////////////////////////////////////////////
 class DecoderBase
@@ -44,10 +44,10 @@ protected:
     void consume(size_t n) { assert(is_limited()); limits_top() -= n; }
 public:
     // Exceptions
-    class error : public jan::exception
+    class error : public __vic::exception
     {
     protected:
-        explicit error(const char *msg) : jan::exception(msg) {}
+        explicit error(const char *msg) : __vic::exception(msg) {}
     };
     // Bad input stream format (error in the stream generator)
     struct format_error : public error
@@ -292,7 +292,7 @@ bool Decoder<SR>::read_length(size_t &len_)
     // of bytes to follow that represent the length field, followed by that
     // number of bytes encoding the length in big-endian byte order
     unsigned len_field_len = b & 0x7FU; // clear high-order bit
-    if(len_field_len > sizeof(size_t)) throw decoding_error(jan::msg(64)
+    if(len_field_len > sizeof(size_t)) throw decoding_error(__vic::msg(64)
          << "\"length of the length field\" value is too long: "
          << len_field_len);
     size_t len = 0;
@@ -339,7 +339,7 @@ TInt Decoder<SR>::read_integer(size_t len)
     size_t c = len;
     if(len > sizeof(TInt) && (TInt(-1)<TInt(0) ||
                     (len > sizeof(TInt) + 1 || !next_byte_is_0(c))))
-        throw decoding_error(jan::msg(64) <<
+        throw decoding_error(__vic::msg(64) <<
             "value length is too big: " << len << " bytes");
     TInt res = read_value_byte();
     bool is_neg = res & TInt(0x80);
@@ -405,13 +405,13 @@ bool Decoder<SR>::read_type_raw_or_eoc(TUInt &t)
 
 #if __cplusplus >= 201103L // C++11
 //----------------------------------------------------------------------------
-inline jan::string_buffer &operator<<(jan::string_buffer &s, type_tag_t t)
+inline __vic::string_buffer &operator<<(__vic::string_buffer &s, type_tag_t t)
     { to_text(t, s); return s; }
-inline jan::string_buffer &&operator<<(jan::string_buffer &&s, type_tag_t t)
+inline __vic::string_buffer &&operator<<(__vic::string_buffer &&s, type_tag_t t)
     { to_text(t, s); return std::move(s); }
 //----------------------------------------------------------------------------
 #endif
 
-}}}} // namespace
+}}} // namespace
 
 #endif // header guard

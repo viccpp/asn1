@@ -1,14 +1,14 @@
 // Internal implementation header
 //
 // Platform: ISO C++ 11
-// $Id: ber_encoded_length.h 1041 2013-08-29 14:10:27Z vdyachenko $
+// $Id$
 
-#ifndef __MFISOFT_JANUARY_ASN1_IMPL_BER_ENCODED_LENGTH_H
-#define __MFISOFT_JANUARY_ASN1_IMPL_BER_ENCODED_LENGTH_H
+#ifndef __VIC_ASN1_IMPL_BER_ENCODED_LENGTH_H
+#define __VIC_ASN1_IMPL_BER_ENCODED_LENGTH_H
 
-#include<mfisoft/january/asn1/impl/der_encoded_length.h>
+#include<__vic/asn1/impl/der_encoded_length.h>
 
-namespace mfisoft { namespace january { namespace ASN1 { namespace impl {
+namespace __vic { namespace ASN1 { namespace impl {
 
 //----------------------------------------------------------------------------
 // Using DER-functions
@@ -19,6 +19,6 @@ inline size_t ber_encoded_length(const T &v)
 }
 //----------------------------------------------------------------------------
 
-}}}} // namespace
+}}} // namespace
 
 #endif // header guard

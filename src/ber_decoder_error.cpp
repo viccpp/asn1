@@ -1,20 +1,20 @@
 //
-// $Id: ber_decoder_error.cpp 815 2013-03-05 14:39:54Z vdyachenko $
+// $Id$
 //
 
-#include<mfisoft/january/asn1/ber_decoder.h>
-#include<mfisoft/january/string_buffer.h>
+#include<__vic/asn1/ber_decoder.h>
+#include<__vic/string_buffer.h>
 
-namespace mfisoft { namespace january { namespace ASN1 { namespace BER {
+namespace __vic { namespace ASN1 { namespace BER {
 
 //----------------------------------------------------------------------------
 DecoderBase::format_error::format_error(const char *msg)
-    : error(jan::msg(128) << "BER format error: " << msg)
+    : error(__vic::msg(128) << "BER format error: " << msg)
 {
 }
 //----------------------------------------------------------------------------
 DecoderBase::decoding_error::decoding_error(const char *msg)
-    : error(jan::msg(128) << "BER decoding error: " << msg)
+    : error(__vic::msg(128) << "BER decoding error: " << msg)
 {
 }
 //----------------------------------------------------------------------------
@@ -29,4 +29,4 @@ DecoderBase::truncated_stream_error::truncated_stream_error()
 }
 //----------------------------------------------------------------------------
 
-}}}} // namespace
+}}} // namespace

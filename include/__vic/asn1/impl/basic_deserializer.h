@@ -1,27 +1,27 @@
 // Internal implementation header
 //
 // Platform: ISO C++ 11
-// $Id: basic_deserializer.h 1944 2015-12-22 09:53:20Z vdyachenko $
+// $Id$
 
-#ifndef __MFISOFT_JANUARY_ASN1_IMPL_BASIC_DESERIALIZER_H
-#define __MFISOFT_JANUARY_ASN1_IMPL_BASIC_DESERIALIZER_H
+#ifndef __VIC_ASN1_IMPL_BASIC_DESERIALIZER_H
+#define __VIC_ASN1_IMPL_BASIC_DESERIALIZER_H
 
-#include<mfisoft/january/bits.h>
-#include<mfisoft/january/error.h>
-#include<mfisoft/january/string_buffer.h>
-#include<mfisoft/january/asn1/ber_decoder.h>
-#include<mfisoft/january/asn1/types.h>
+#include<__vic/bits.h>
+#include<__vic/error.h>
+#include<__vic/string_buffer.h>
+#include<__vic/asn1/ber_decoder.h>
+#include<__vic/asn1/types.h>
 #include<type_traits>
 #include<algorithm>
 
-namespace mfisoft { namespace january { namespace ASN1 {
+namespace __vic { namespace ASN1 {
 
 //////////////////////////////////////////////////////////////////////////////
 struct DeserializerBase
 {
-    struct bad_format : public jan::exception
+    struct bad_format : public __vic::exception
     {
-        explicit bad_format(const char *m) : jan::exception(m) {}
+        explicit bad_format(const char *m) : __vic::exception(m) {}
     };
 protected:
     template<class...> struct always_false : std::false_type {};
@@ -494,7 +494,7 @@ inline bool DeserializerBase::deserialize_choice_option(
         ch.set_default_and_apply(t.tag(),
             choice_option_deserializer<Deserializer>{ds, t.p_c()});
         return true;
-    } catch(invalid_choice_tag) {
+    } catch(const invalid_choice_tag &) {
         return false;
     }
 }
@@ -504,7 +504,7 @@ inline void DeserializerBase::deserialize_choice_lv(
     Deserializer &ds, CHOICE<Opts...> &ch, const type_field_t &t)
 {
     if(!deserialize_choice_option(ds, ch, t))
-        throw bad_format(jan::msg(64) <<
+        throw bad_format(__vic::msg(64) <<
             t.tag() << " is not valid CHOICE option");
 }
 //----------------------------------------------------------------------------
@@ -515,8 +515,8 @@ inline void DeserializerBase::deserialize_class_option(
     try {
         ch.set_default_and_apply(oid.c_str(),
             class_option_deserializer<Deserializer>{ds});
-    } catch(invalid_choice_tag) {
-        throw bad_format(jan::msg(64) <<
+    } catch(const invalid_choice_tag &) {
+        throw bad_format(__vic::msg(64) <<
             "Invalid CLASS discriminant: \"" << oid << '"');
     }
 }
@@ -540,6 +540,6 @@ inline void DeserializerBase::deserialize_class(
 }
 //----------------------------------------------------------------------------
 
-}}} // namespace
+}} // namespace
 
 #endif // header guard

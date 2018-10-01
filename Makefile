@@ -6,9 +6,6 @@
 all: src/Makefile
 	cd src && $(MAKE)
 
-install: src/Makefile
-	cd src && $(MAKE) install
-
 test: test/Makefile
 	cd test && $(MAKE)
 

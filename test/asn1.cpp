@@ -1,19 +1,19 @@
-#include<mfisoft/january/asn1/ber.h>
-#include<mfisoft/january/asn1/ber_coder.h>
-#include<mfisoft/january/asn1/ber_decoder.h>
+#include<__vic/asn1/ber.h>
+#include<__vic/asn1/ber_coder.h>
+#include<__vic/asn1/ber_decoder.h>
 #if __cplusplus >= 201103L
-#include<mfisoft/january/asn1/types.h>
-#include<mfisoft/january/asn1/ber_serializer.h>
-#include<mfisoft/january/asn1/der_serializer.h>
-#include<mfisoft/january/asn1/ber_deserializer.h>
-#include<mfisoft/january/asn1/der_deserializer.h>
+#include<__vic/asn1/types.h>
+#include<__vic/asn1/ber_serializer.h>
+#include<__vic/asn1/der_serializer.h>
+#include<__vic/asn1/ber_deserializer.h>
+#include<__vic/asn1/der_deserializer.h>
 #endif
-#include<mfisoft/january/sys/fs.h>
+#include<__vic/fs.h>
 #include<iostream>
 #include<fstream>
 #include<cassert>
 
-namespace ASN1 = mfisoft::january::ASN1;
+namespace ASN1 = __vic::ASN1;
 using namespace ASN1;
 
 //////////////////////////////////////////////////////////////////////////////
@@ -130,7 +130,7 @@ void deserializeDER(T &v, const char *fname = "res.der")
 
 enum Status { stOk = 1, stError = 2 };
 
-namespace mfisoft { namespace january { namespace ASN1 {
+namespace __vic { namespace ASN1 {
 //---------------------------------------------------------------------------
 // Validator for a deserializer
 template<>
@@ -139,7 +139,7 @@ inline bool is_enum_value<Status>(std::underlying_type<Status>::type int_val)
     return int_val == stOk || int_val == stError;
 }
 //---------------------------------------------------------------------------
-}}} // namespace
+}} // namespace
 
 extern const char oid1[] = "oid1", oid2[] = "oid2", oid3[] = "oid3";
 
@@ -282,7 +282,7 @@ void optional_choice_test()
     deserializeBER(s);
 }
 //---------------------------------------------------------------------------
-struct Print : private jan::non_copyable
+struct Print : private __vic::non_copyable
 {
     template<class T>
     void operator()(const T &v) const { std::cout << v << ' '; }
@@ -305,7 +305,7 @@ void for_each_test()
     const_cast<const Seq &>(s).for_each(Print{});
     std::cout << '\n';
 
-    struct Modify : private jan::non_copyable
+    struct Modify : private __vic::non_copyable
     {
         void operator()(INTEGER<> &v) const { v = v + 1; }
         void operator()(BOOLEAN &v) const { v = !v; }
@@ -378,7 +378,7 @@ int main()
 
         encoding_test();
         decoding_test();
-        jan::remove_file_if_exists("asn1.ber");
+        __vic::remove_file_if_exists("asn1.ber");
 
 #if __cplusplus >= 201103L
         asn1_types_test();

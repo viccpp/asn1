@@ -1,10 +1,10 @@
 //
-// $Id: decoder_limits.cpp 833 2013-03-21 13:23:51Z vdyachenko $
+// $Id$
 //
 
-#include<mfisoft/january/asn1/ber_decoder.h>
+#include<__vic/asn1/ber_decoder.h>
 
-namespace mfisoft { namespace january { namespace ASN1 { namespace BER {
+namespace __vic { namespace ASN1 { namespace BER {
 
 //----------------------------------------------------------------------------
 void DecoderBase::push_limit(size_t n)
@@ -24,4 +24,4 @@ void DecoderBase::pop_limit()
 }
 //----------------------------------------------------------------------------
 
-}}}} // namespace
+}}} // namespace

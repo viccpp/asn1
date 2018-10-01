@@ -1,12 +1,12 @@
 //
-// $Id: strings_validate.cpp 1201 2013-12-03 10:52:00Z vdyachenko $
+// $Id$
 //
 
-#include<mfisoft/january/asn1/types.h>
+#include<__vic/asn1/types.h>
 #include<cstring>
 #include<cctype>
 
-namespace mfisoft { namespace january { namespace ASN1 {
+namespace __vic { namespace ASN1 {
 
 //----------------------------------------------------------------------------
 inline bool find_in(char ch, const char *palette)
@@ -71,4 +71,4 @@ bool NumericString::is_valid() const
 }
 //----------------------------------------------------------------------------
 
-}}} // namespace
+}} // namespace

@@ -1,18 +1,19 @@
 // ASN.1-types
 //
 // Platform: ISO C++ 11
-// $Id: types.h 1825 2015-09-10 13:55:47Z vdyachenko $
+// $Id$
 
-#ifndef __MFISOFT_JANUARY_ASN1_TYPES_H
-#define __MFISOFT_JANUARY_ASN1_TYPES_H
+#ifndef __VIC_ASN1_TYPES_H
+#define __VIC_ASN1_TYPES_H
 
 #if __cplusplus < 201103L
 #error ISO C++11 compiler required
 #endif
 
-#include<mfisoft/january/asn1/ber.h>
-#include<mfisoft/january/error.h>
-#include<mfisoft/january/meta.h>
+#include<__vic/asn1/ber.h>
+#include<__vic/asn1/impl/choose_type.h>
+#include<__vic/error.h>
+#include<__vic/type_traits.h>
 #include<initializer_list>
 #include<type_traits>
 #include<cstddef>
@@ -25,7 +26,7 @@
 #include<memory>
 #include<vector>
 
-namespace mfisoft { namespace january { namespace ASN1 {
+namespace __vic { namespace ASN1 {
 
 using std::size_t;
 using BER::type_tag_t;
@@ -460,11 +461,11 @@ public:
 
     template<unsigned I>
     typename std::enable_if<(I > 0U && I <= sizeof...(Tail) + 1U),
-        jan::choose_type<I, Head, Tail...>
+        choose_type<I, Head, Tail...>
     >::type &get() { return tail().template get<I - 1U>(); }
     template<unsigned I>
     typename std::enable_if<(I > 0U && I <= sizeof...(Tail) + 1U),
-        jan::choose_type<I, Head, Tail...>
+        choose_type<I, Head, Tail...>
     >::type const &get() const { return tail().template get<I - 1U>(); }
 
     template<class F> void for_each(F &&f)
@@ -498,10 +499,10 @@ public:
     SEQUENCE &operator=(const SEQUENCE & );
 
     template<unsigned I>
-    jan::choose_type<I, Elems...> &get()
+    choose_type<I, Elems...> &get()
         { return elems.template get<I>(); }
     template<unsigned I>
-    const jan::choose_type<I, Elems...> &get() const
+    const choose_type<I, Elems...> &get() const
         { return elems.template get<I>(); }
 
     elements_type &elements() { return elems; }
@@ -515,9 +516,9 @@ public:
 //////////////////////////////////////////////////////////////////////////////
 //----------------------------------------------------------------------------
 #define SEQ_FIELD(index,name) \
-    ::mfisoft::january::choose_type_tuple<index,self_type> \
+    ::__vic::ASN1::choose_type_tuple<index,self_type> \
         &name() { return this->get<index>(); } \
-    ::mfisoft::january::choose_type_tuple<index,self_type> \
+    ::__vic::ASN1::choose_type_tuple<index,self_type> \
         const &name() const { return this->get<index>(); }
 //----------------------------------------------------------------------------
 template<class... Elems>
@@ -731,7 +732,7 @@ auto choice_set_default_and_apply_thunk(Choice &ch, Func &&f)
 }
 //----------------------------------------------------------------------------
 template<class Choice, class Func, size_t... I>
-inline auto choice_apply_impl(Choice &ch, Func &&f, jan::index_sequence<I...> )
+inline auto choice_apply_impl(Choice &ch, Func &&f, __vic::index_sequence<I...> )
     -> decltype(choice_apply_thunk<0>(ch, std::forward<Func>(f)))
 {
     static const decltype(&choice_apply_thunk<0,Choice,Func>)
@@ -742,7 +743,7 @@ inline auto choice_apply_impl(Choice &ch, Func &&f, jan::index_sequence<I...> )
 //----------------------------------------------------------------------------
 template<class Choice, class Func, size_t... I>
 inline auto choice_set_default_and_apply_impl(
-        Choice &ch, unsigned idx, Func &&f, jan::index_sequence<I...> )
+        Choice &ch, unsigned idx, Func &&f, __vic::index_sequence<I...> )
     -> decltype(choice_set_default_and_apply_thunk<0>(ch, std::forward<Func>(f)))
 {
     static const decltype(&choice_set_default_and_apply_thunk<0,Choice,Func>)
@@ -756,7 +757,7 @@ inline auto choice_apply(Choice &ch, Func &&f)
     -> decltype(choice_apply_thunk<0>(ch, std::forward<Func>(f)))
 {
     return choice_apply_impl(ch, std::forward<Func>(f),
-        jan::make_index_sequence<Choice::size()>{});
+        __vic::make_index_sequence<Choice::size()>{});
 }
 //----------------------------------------------------------------------------
 template<class Choice, class Func>
@@ -764,7 +765,7 @@ inline auto choice_set_default_and_apply(Choice &ch, unsigned idx, Func &&f)
     -> decltype(choice_set_default_and_apply_thunk<0>(ch, std::forward<Func>(f)))
 {
     return choice_set_default_and_apply_impl(ch, idx, std::forward<Func>(f),
-        jan::make_index_sequence<Choice::size()>{});
+        __vic::make_index_sequence<Choice::size()>{});
 }
 //----------------------------------------------------------------------------
 } // namespace
@@ -792,7 +793,7 @@ class CHOICE
 public:
     static constexpr unsigned size() { return sizeof...(Opts); }
     static_assert(size() != 0, "CHOICE must have at least one option");
-    template<unsigned I> using option_type = jan::choose_type<I,Opts...>;
+    template<unsigned I> using option_type = choose_type<I,Opts...>;
     template<unsigned I> option_type<I> &set_default();
 private:
     int curr = -1;
@@ -957,7 +958,7 @@ template<class OID, class... Opts>
 class CLASS_CHOICE // CLASS
 {
     template<unsigned I>
-    using wrapped_option_type = jan::choose_type<I,Opts...>;
+    using wrapped_option_type = choose_type<I,Opts...>;
 public:
     static constexpr type_tag_t tag() { return OID::tag(); }
     static constexpr unsigned size() { return sizeof...(Opts); }
@@ -1102,6 +1103,6 @@ auto CLASS_CHOICE<OID,Opts...>::set_default() -> option_type<I> &
 
 #undef FORWARD_BASE_OPS
 
-}}} // namespace
+}} // namespace
 
 #endif // header guard

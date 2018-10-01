@@ -1,12 +1,12 @@
 //
-// $Id: type_to_text.cpp 887 2013-04-17 10:12:04Z vdyachenko $
+// $Id$
 //
 
-#include<mfisoft/january/defs.h>
-#include<mfisoft/january/asn1/ber.h>
-#include<cstdio> // for std::sprintf()
+#include<__vic/defs.h>
+#include<__vic/asn1/ber.h>
+#include<cstdio> // for std::snprintf()
 
-namespace mfisoft { namespace january { namespace ASN1 { namespace BER {
+namespace __vic { namespace ASN1 { namespace BER {
 
 namespace {
 const char * const universal_types_names[] =
@@ -52,7 +52,7 @@ void to_text(type_tag_t t, std::string &res)
     switch(t.class_())
     {
         case universal:
-            if(t.number() < jan::array_size(universal_types_names))
+            if(t.number() < __vic::array_size(universal_types_names))
             {
                 res += universal_types_names[t.number()];
                 return;
@@ -67,8 +67,9 @@ void to_text(type_tag_t t, std::string &res)
         {
             if(is_context_spec) res += '[';
             // TODO: make more accurate & safe number to text conversion
-            char buf[16];
-            std::sprintf(buf, "%u", static_cast<unsigned>(t.number()));
+            char buf[32];
+            std::snprintf(buf, sizeof buf, "%u",
+                            static_cast<unsigned>(t.number()));
             res += buf;
             res += ']';
         }
@@ -76,4 +77,4 @@ void to_text(type_tag_t t, std::string &res)
 }
 //----------------------------------------------------------------------------
 
-}}}} // namespace
+}}} // namespace

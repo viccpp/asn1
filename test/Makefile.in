@@ -3,16 +3,16 @@
 
 CC      = @CXX@
 CFLAGS  = @WARNS_ALL@
-LIBS = ../src/@LIBNAME@ -ljanuary -lpthread @LIBS@
+LIBS = ../src/@LIBNAME@ -l__vic11 @LIBS@
 
 SOURCES := $(wildcard *.cpp)
-BINARIES := $(SOURCES:.cpp=)
+BINARIES := $(SOURCES:.cpp=.test)
 
 .PHONY: all clean
 
 all: $(BINARIES) ;
 
-%: %.cpp ../src/@LIBNAME@
+%.test: %.cpp ../src/@LIBNAME@
 	$(CC) -I../include @CFLAGS@ $(CFLAGS) -MMD -o $@ $< $(LIBS)
 
 regexp: LIBS += -lpcre
@@ -21,4 +21,4 @@ regexp: LIBS += -lpcre
 	cd ../src && $(MAKE) CFLAGS="$(CFLAGS)"
 
 clean:
-	rm -f $(BINARIES) *.d rotatable.log* *.[bd]er
+	rm -f *.test *.d rotatable.log* *.[bd]er

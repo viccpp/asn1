@@ -1,18 +1,18 @@
 // Common primitives for ASN.1 BER
 //
 // Platform: ISO C++ 98 / 11
-// $Id: ber.h 1452 2014-05-16 09:30:44Z vdyachenko $
+// $Id$
 
-#ifndef __MFISOFT_JANUARY_ASN1_BER_H
-#define __MFISOFT_JANUARY_ASN1_BER_H
+#ifndef __VIC_ASN1_BER_H
+#define __VIC_ASN1_BER_H
 
-#include<mfisoft/january/defs.h>
+#include<__vic/defs.h>
+#include<__vic/stdint.h>
 #include<cstddef>
-#include JAN_CSTDINT
 #include<cassert>
 #include<string>
 
-namespace mfisoft { namespace january { namespace ASN1 { namespace BER {
+namespace __vic { namespace ASN1 { namespace BER {
 
 using std::size_t;
 
@@ -33,25 +33,20 @@ enum primitive_constructed
 //////////////////////////////////////////////////////////////////////////////
 class type_tag_t
 {
-    tag_number_t num_;
     tag_class_t cls_;
+    tag_number_t num_;
 public:
-    type_tag_t() JAN_DEFAULT_CTR
-    JAN_CONSTEXPR_FUNC type_tag_t(tag_number_t t, tag_class_t cls)
-        : num_(t), cls_(cls) {}
-    JAN_CONSTEXPR_FUNC type_tag_t(tag_class_t cls, tag_number_t t)
-        : num_(t), cls_(cls) {}
+    type_tag_t() __VIC_DEFAULT_CTR
+    __VIC_CONSTEXPR_FUNC type_tag_t(tag_number_t t, tag_class_t cls)
+        : cls_(cls) , num_(t) {}
+    __VIC_CONSTEXPR_FUNC type_tag_t(tag_class_t cls, tag_number_t t)
+        : cls_(cls), num_(t) {}
 
-    JAN_CONSTEXPR_FUNC tag_number_t number() const { return num_; }
-    JAN_CONSTEXPR_FUNC tag_class_t class_() const { return cls_; }
+    __VIC_CONSTEXPR_FUNC tag_number_t number() const { return num_; }
+    __VIC_CONSTEXPR_FUNC tag_class_t class_() const { return cls_; }
 
     tag_number_t &number_ref() { return num_; }
     tag_class_t &class_ref() { return cls_; }
-
-    JAN_CONSTEXPR_FUNC bool operator==(type_tag_t o) const
-        { return class_() == o.class_() && number() == o.number(); }
-    JAN_CONSTEXPR_FUNC bool operator!=(type_tag_t o) const
-        { return class_() != o.class_() || number() != o.number(); }
 };
 //////////////////////////////////////////////////////////////////////////////
 class type_field_t
@@ -59,32 +54,27 @@ class type_field_t
     type_tag_t tag_;
     primitive_constructed p_c_;
 public:
-    type_field_t() JAN_DEFAULT_CTR
-    JAN_CONSTEXPR_FUNC type_field_t(type_tag_t t, primitive_constructed pc)
+    type_field_t() __VIC_DEFAULT_CTR
+    __VIC_CONSTEXPR_FUNC type_field_t(type_tag_t t, primitive_constructed pc)
         : tag_(t), p_c_(pc) {}
-    JAN_CONSTEXPR_FUNC type_field_t(
+    __VIC_CONSTEXPR_FUNC type_field_t(
             tag_number_t t, tag_class_t cls, primitive_constructed pc)
         : tag_(t, cls), p_c_(pc) {}
-    JAN_CONSTEXPR_FUNC type_field_t(
+    __VIC_CONSTEXPR_FUNC type_field_t(
             tag_class_t cls, tag_number_t t, primitive_constructed pc)
         : tag_(t, cls), p_c_(pc) {}
 
-    JAN_CONSTEXPR_FUNC type_tag_t tag() const { return tag_; }
-    JAN_CONSTEXPR_FUNC tag_number_t tag_number() const { return tag_.number(); }
-    JAN_CONSTEXPR_FUNC tag_class_t tag_class() const { return tag_.class_(); }
+    __VIC_CONSTEXPR_FUNC type_tag_t tag() const { return tag_; }
+    __VIC_CONSTEXPR_FUNC tag_number_t tag_number() const { return tag_.number(); }
+    __VIC_CONSTEXPR_FUNC tag_class_t tag_class() const { return tag_.class_(); }
 
-    JAN_CONSTEXPR_FUNC primitive_constructed p_c() const { return p_c_; }
-    JAN_CONSTEXPR_FUNC bool is_primitive() const { return p_c_ == primitive; }
-    JAN_CONSTEXPR_FUNC bool is_constructed() const { return p_c_ == constructed; }
+    __VIC_CONSTEXPR_FUNC primitive_constructed p_c() const { return p_c_; }
+    __VIC_CONSTEXPR_FUNC bool is_primitive() const { return p_c_ == primitive; }
+    __VIC_CONSTEXPR_FUNC bool is_constructed() const { return p_c_ == constructed; }
 
     tag_number_t &tag_number_ref() { return tag_.number_ref(); }
     tag_class_t &tag_class_ref() { return tag_.class_ref(); }
     primitive_constructed &p_c_ref() { return p_c_; }
-
-    JAN_CONSTEXPR_FUNC bool operator==(type_field_t o) const
-        { return tag() == o.tag() && p_c() == o.p_c(); }
-    JAN_CONSTEXPR_FUNC bool operator!=(type_field_t o) const
-        { return tag() != o.tag() || p_c() != o.p_c(); }
 };
 //////////////////////////////////////////////////////////////////////////////
 
@@ -99,12 +89,50 @@ extern const char * const tag_class_names[4];
 } // namespace
 
 //----------------------------------------------------------------------------
-JAN_CONSTEXPR_FUNC bool is_primitive(primitive_constructed p_c)
+__VIC_CONSTEXPR_FUNC bool operator==(type_tag_t t1, type_tag_t t2)
+{
+    return t1.class_() == t2.class_() && t1.number() == t2.number();
+}
+//----------------------------------------------------------------------------
+__VIC_CONSTEXPR_FUNC bool operator!=(type_tag_t t1, type_tag_t t2)
+{
+    return !(t1 == t2);
+}
+//----------------------------------------------------------------------------
+// Canonical order as defined by ITU-T X.680, 8.6
+__VIC_CONSTEXPR_FUNC bool operator<(type_tag_t t1, type_tag_t t2)
+{
+    return t1.class_() < t2.class_() ||
+        (t1.class_() == t2.class_() && t1.number() < t2.number());
+}
+__VIC_CONSTEXPR_FUNC bool operator>(type_tag_t t1, type_tag_t t2)
+{
+    return t2 < t1;
+}
+__VIC_CONSTEXPR_FUNC bool operator>=(type_tag_t t1, type_tag_t t2)
+{
+    return !(t1 < t2);
+}
+__VIC_CONSTEXPR_FUNC bool operator<=(type_tag_t t1, type_tag_t t2)
+{
+    return !(t2 < t1);
+}
+//----------------------------------------------------------------------------
+__VIC_CONSTEXPR_FUNC bool operator==(type_field_t t1, type_field_t t2)
+{
+    return t1.tag() == t2.tag() && t1.p_c() == t2.p_c();
+}
+__VIC_CONSTEXPR_FUNC bool operator!=(type_field_t t1, type_field_t t2)
+{
+    return !(t1 == t2);
+}
+//----------------------------------------------------------------------------
+__VIC_CONSTEXPR_FUNC bool is_primitive(primitive_constructed p_c)
 {
     return p_c == primitive;
 }
 //----------------------------------------------------------------------------
-JAN_CONSTEXPR_FUNC bool is_constructed(primitive_constructed p_c)
+__VIC_CONSTEXPR_FUNC bool is_constructed(primitive_constructed p_c)
 {
     return p_c == constructed;
 }
@@ -143,6 +171,6 @@ void to_text(type_tag_t , std::string & );
 inline std::string to_text(type_tag_t t)
 { std::string res; to_text(t, res); return res; }
 
-}}}} // namespace
+}}} // namespace
 
 #endif // header guard

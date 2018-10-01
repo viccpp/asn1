@@ -1,15 +1,16 @@
 // ASN.1 DER deserializer
 //
 // Platform: ISO C++ 11
-// $Id: der_deserializer.h 1944 2015-12-22 09:53:20Z vdyachenko $
+// $Id$
 
-#ifndef __MFISOFT_JANUARY_ASN1_DER_DESERIALIZER_H
-#define __MFISOFT_JANUARY_ASN1_DER_DESERIALIZER_H
+#ifndef __VIC_ASN1_DER_DESERIALIZER_H
+#define __VIC_ASN1_DER_DESERIALIZER_H
 
-#include<mfisoft/january/asn1/impl/basic_deserializer.h>
+#include<__vic/asn1/impl/basic_deserializer.h>
+#include<__vic/ascii.h>
 #include<type_traits>
 
-namespace mfisoft { namespace january { namespace ASN1 {
+namespace __vic { namespace ASN1 {
 
 //////////////////////////////////////////////////////////////////////////////
 template<class StreamReader>
@@ -130,8 +131,9 @@ void DERDeserializer<SR>::deserialize_lv(BOOLEAN &v, pc_t p_c)
     {
         case 0x00: v = false; break;
         case 0xFF: v = true;  break;
-        default: throw bad_format(jan::msg(32) << "Invalid value: 0x" <<
-            jan::hi_nibble_to_hex(b) << jan::lo_nibble_to_hex(b));
+        default: throw bad_format(__vic::msg(32) << "Invalid value: 0x" <<
+            __vic::ascii::toxdigit_upper(__vic::hi_nibble(b)) <<
+            __vic::ascii::toxdigit_upper(__vic::lo_nibble(b)));
     }
 }
 //----------------------------------------------------------------------------
@@ -259,6 +261,6 @@ void DERDeserializer<SR>::deserialize(CLASS_CHOICE<OID,Opts...> &c)
 }
 //----------------------------------------------------------------------------
 
-}}} // namespace
+}} // namespace
 
 #endif // header guard

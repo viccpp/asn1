@@ -1,0 +1,7 @@
+/src/Makefile
+/test/Makefile
+/test/*.test
+/test/*.[bd]er
+*.o
+*.a
+*.d

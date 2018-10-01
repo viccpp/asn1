@@ -1,15 +1,15 @@
 // ASN.1 BER deserializer
 //
 // Platform: ISO C++ 11
-// $Id: ber_deserializer.h 1944 2015-12-22 09:53:20Z vdyachenko $
+// $Id$
 
-#ifndef __MFISOFT_JANUARY_ASN1_BER_DESERIALIZER_H
-#define __MFISOFT_JANUARY_ASN1_BER_DESERIALIZER_H
+#ifndef __VIC_ASN1_BER_DESERIALIZER_H
+#define __VIC_ASN1_BER_DESERIALIZER_H
 
-#include<mfisoft/january/asn1/impl/basic_deserializer.h>
+#include<__vic/asn1/impl/basic_deserializer.h>
 #include<type_traits>
 
-namespace mfisoft { namespace january { namespace ASN1 {
+namespace __vic { namespace ASN1 {
 
 //////////////////////////////////////////////////////////////////////////////
 template<class StreamReader>
@@ -343,6 +343,6 @@ void BERDeserializer<SR>::deserialize(CLASS_CHOICE<OID,Opts...> &c)
 }
 //----------------------------------------------------------------------------
 
-}}} // namespace
+}} // namespace
 
 #endif // header guard

@@ -1,16 +1,16 @@
 // Internal implementation header
 //
 // Platform: ISO C++ 11
-// $Id: basic_serializer.h 1944 2015-12-22 09:53:20Z vdyachenko $
+// $Id$
 
-#ifndef __MFISOFT_JANUARY_ASN1_IMPL_BASIC_SERIALIZER_H
-#define __MFISOFT_JANUARY_ASN1_IMPL_BASIC_SERIALIZER_H
+#ifndef __VIC_ASN1_IMPL_BASIC_SERIALIZER_H
+#define __VIC_ASN1_IMPL_BASIC_SERIALIZER_H
 
-#include<mfisoft/january/asn1/ber_coder.h>
-#include<mfisoft/january/asn1/types.h>
+#include<__vic/asn1/ber_coder.h>
+#include<__vic/asn1/types.h>
 #include<type_traits>
 
-namespace mfisoft { namespace january { namespace ASN1 {
+namespace __vic { namespace ASN1 {
 
 //////////////////////////////////////////////////////////////////////////////
 class SerializerBase
@@ -198,6 +198,6 @@ void BasicSerializer<SW>::serialize(NULL_ )
 }
 //----------------------------------------------------------------------------
 
-}}} // namespace
+}} // namespace
 
 #endif // header guard

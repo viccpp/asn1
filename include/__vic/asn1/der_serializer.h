@@ -1,16 +1,16 @@
 // ASN.1 DER serializer
 //
 // Platform: ISO C++ 11
-// $Id: der_serializer.h 1854 2015-09-30 10:48:44Z vdyachenko $
+// $Id$
 
-#ifndef __MFISOFT_JANUARY_ASN1_DER_SERIALIZER_H
-#define __MFISOFT_JANUARY_ASN1_DER_SERIALIZER_H
+#ifndef __VIC_ASN1_DER_SERIALIZER_H
+#define __VIC_ASN1_DER_SERIALIZER_H
 
-#include<mfisoft/january/asn1/impl/der_encoded_length.h>
-#include<mfisoft/january/asn1/impl/basic_serializer.h>
-#include<mfisoft/january/asn1/impl/der_pc_traits.h>
+#include<__vic/asn1/impl/der_encoded_length.h>
+#include<__vic/asn1/impl/basic_serializer.h>
+#include<__vic/asn1/impl/der_pc_traits.h>
 
-namespace mfisoft { namespace january { namespace ASN1 {
+namespace __vic { namespace ASN1 {
 
 //////////////////////////////////////////////////////////////////////////////
 template<class StreamWriter>
@@ -121,6 +121,6 @@ void DERSerializer<SW>::serialize(const CLASS_CHOICE<OID,Opts...> &c)
 }
 //----------------------------------------------------------------------------
 
-}}} // namespace
+}} // namespace
 
 #endif // header guard

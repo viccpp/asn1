@@ -1,14 +1,14 @@
 // Primitives for ASN.1 BER encoding
 //
 // Platform: ISO C++ 98 / 11
-// $Id: ber_coder.h 1452 2014-05-16 09:30:44Z vdyachenko $
+// $Id$
 
-#ifndef __MFISOFT_JANUARY_ASN1_BER_CODER_H
-#define __MFISOFT_JANUARY_ASN1_BER_CODER_H
+#ifndef __VIC_ASN1_BER_CODER_H
+#define __VIC_ASN1_BER_CODER_H
 
-#include<mfisoft/january/asn1/ber.h>
+#include<__vic/asn1/ber.h>
 
-namespace mfisoft { namespace january { namespace ASN1 { namespace BER {
+namespace __vic { namespace ASN1 { namespace BER {
 
 //////////////////////////////////////////////////////////////////////////////
 // Desired StreamWriter's interface:
@@ -171,6 +171,6 @@ void Coder<SW>::write_integer_with_length(TInt v)
 }
 //----------------------------------------------------------------------------
 
-}}}} // namespace
+}}} // namespace
 
 #endif // header guard
