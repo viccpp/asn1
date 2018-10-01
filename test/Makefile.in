@@ -1,0 +1,24 @@
+################################################################
+# GNU Make Makefile for Unix - GNU C++ or Clang
+
+CC      = @CXX@
+CFLAGS  = @WARNS_ALL@
+LIBS = ../src/@LIBNAME@ -ljanuary -lpthread @LIBS@
+
+SOURCES := $(wildcard *.cpp)
+BINARIES := $(SOURCES:.cpp=)
+
+.PHONY: all clean
+
+all: $(BINARIES) ;
+
+%: %.cpp ../src/@LIBNAME@
+	$(CC) -I../include @CFLAGS@ $(CFLAGS) -MMD -o $@ $< $(LIBS)
+
+regexp: LIBS += -lpcre
+
+../src/@LIBNAME@:
+	cd ../src && $(MAKE) CFLAGS="$(CFLAGS)"
+
+clean:
+	rm -f $(BINARIES) *.d rotatable.log* *.[bd]er

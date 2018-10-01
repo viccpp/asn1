@@ -1,0 +1,30 @@
+################################################################
+# GNU Make Makefile for GNU C++ or Clang
+
+OS = @OS@
+CC = @CXX@
+AR = @AR@
+LIBNAME = @LIBNAME@
+CFLAGS  = -O3 -DNDEBUG
+ARFLAGS = s
+
+SOURCES := $(shell find . @FIND_SRC_EXPR@ | cut -c 3-)
+OBJS := $(SOURCES:.cpp=.o)
+
+.SUFFIXES:
+.SUFFIXES: .cpp .o
+
+$(LIBNAME): $(OBJS)
+	@rm -f *.o
+	$(foreach f,$?,ln $f $(subst /,_,$f) &&) $(AR) r$(ARFLAGS) $@ *.o
+	@rm -f *.o
+
+.cpp.o:
+	$(CC) -c -I../include -I. @CFLAGS@ $(CFLAGS) -o $@ $<
+
+.PHONY: install clean
+
+include install.mk
+
+clean:
+	rm -f $(LIBNAME) $(OBJS) *.o
