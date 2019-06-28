@@ -874,7 +874,7 @@ public:
         return impl::choice_apply(*this, std::forward<Func>(f));
     }
     template<class Func>
-    typename std::result_of<Func(const option_type<0> &)>::type
+    typename std::result_of<Func(option_type<0> &)>::type
     apply_unchecked(Func &&f) const
     {
         return impl::choice_apply(*this, std::forward<Func>(f));
@@ -887,7 +887,7 @@ public:
         return apply_unchecked(std::forward<Func>(f));
     }
     template<class Func>
-    typename std::result_of<Func(const option_type<0> &)>::type
+    typename std::result_of<Func(option_type<0> &)>::type
     apply(Func &&f) const
     {
         validate();
