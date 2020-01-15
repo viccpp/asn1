@@ -423,55 +423,61 @@ public:
     template<class F> void for_each(F && ) const {}
 };
 //////////////////////////////////////////////////////////////////////////////
-template<class Head>
-class sequence_elements<Head>
+// https://github.com/boostorg/beast/blob/develop/include/boost/beast/core/detail/lean_tuple.hpp
+template<unsigned I, class T> struct sequence_element { T v_; };
+template<unsigned I, class T>
+T &get(sequence_element<I, T> &el) { return el.v_; }
+template<unsigned I, class T>
+const T &get(const sequence_element<I, T> &el) { return el.v_; }
+template<unsigned I, class T>
+T &&get(const sequence_element<I, T> &&el) { return std::move(el.v_); }
+//////////////////////////////////////////////////////////////////////////////
+template<class... T, unsigned... I>
+struct sequence_elements_impl<__vic::index_sequence<I...>, T...> :
+    sequence_element<I,T>...
 {
-    Head head_;
-public:
-    Head &head() { return head_; }
-    const Head &head() const { return head_; }
+    template<class... Us>
+    explicit sequence_elements_impl(Us&&... us)
+        : sequence_element<I,T>{std::forward<Us>(us)}... {}
+};
+template<class F, class SeqElems, unsigned... I>
+void seq_for_each_(F &&f, SeqElems &&seq, __vic::index_sequence<I...>)
+{
+    (void) std::initializer_list<char>{ ((void)
+        std::forward<F>(f)(get<I>(std::forward<SeqElems>(seq))),
+    '\0')... };
+}
+//////////////////////////////////////////////////////////////////////////////
+template<class Head>
+struct sequence_elements<Head> : sequence_element<0,Head>
+{
+    Head &head() { return get<0>(*this); }
+    const Head &head() const { return get<0>(*this); }
     sequence_elements<> tail() const { return sequence_elements<>{}; }
-
-    template<unsigned I>
-    typename std::enable_if<I == 0U, Head &>::type get() { return head(); }
-    template<unsigned I>
-    typename std::enable_if<I == 0U, const Head &>::type get() const
-        { return head(); }
 
     template<class F> void for_each(F &&f) { std::forward<F>(f)(head()); }
     template<class F> void for_each(F &&f) const { std::forward<F>(f)(head()); }
 };
 //////////////////////////////////////////////////////////////////////////////
-template<class Head, class... Tail>
-class sequence_elements<Head, Tail...>
+template<class... Elems>
+struct sequence_elements<Elems...> :
+    sequence_elements_impl<__vic::index_sequence_for<Elems...>, Elems...>
 {
-    Head head_;
-    sequence_elements<Tail...> tail_;
-public:
-    Head &head() { return head_; }
+    Head &head() { return get<0>(*this); }
     sequence_elements<Tail...> &tail() { return tail_; }
-    const Head &head() const { return head_; }
+    const Head &head() const { return get<0>(*this); }
     const sequence_elements<Tail...> &tail() const { return tail_; }
 
-    template<unsigned I>
-    typename std::enable_if<I == 0U, Head &>::type get() { return head(); }
-    template<unsigned I>
-    typename std::enable_if<I == 0U, const Head &>::type get() const
-        { return head(); }
-
-    template<unsigned I>
-    typename std::enable_if<(I > 0U && I <= sizeof...(Tail) + 1U),
-        choose_type<I, Head, Tail...>
-    >::type &get() { return tail().template get<I - 1U>(); }
-    template<unsigned I>
-    typename std::enable_if<(I > 0U && I <= sizeof...(Tail) + 1U),
-        choose_type<I, Head, Tail...>
-    >::type const &get() const { return tail().template get<I - 1U>(); }
-
-    template<class F> void for_each(F &&f)
-        { std::forward<F>(f)(head()); tail().for_each(std::forward<F>(f)); }
+    template<class F, class > void for_each(F &&f)
+    {
+        seq_for_each_(std::forward<F>(f),
+            *this, __vic::index_sequence_for<Elems...>);
+    }
     template<class F> void for_each(F &&f) const
-        { std::forward<F>(f)(head()); tail().for_each(std::forward<F>(f)); }
+    {
+        seq_for_each_(std::forward<F>(f),
+            *this, __vic::index_sequence_for<Elems...>);
+    }
 };
 //////////////////////////////////////////////////////////////////////////////
 
