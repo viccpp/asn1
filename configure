@@ -5,39 +5,30 @@ export LANG=C
 
 usage() {
     cat <<EOF
-Usage: $1 [v1|v2] [--with-gcc|--with-clang] [pic|--with-pic] [--without-regexp]"
-    v1               - compile using C++98 mode [default]
-    v2               - compile using C++11 mode
-    --with-gcc       - compile using GCC [default]
-    --with-clang     - compile using Clang
+Usage: $1 [std={98|11|14|17}] [compiler={gcc|clang|intel}] [pic|--with-pic]"
+    std=XX          - compile using C++XX mode [14 is default]
+    compiler=CC     - compile using CC [gcc is default]
     --with-pic, pic  - compile with -fPIC
-    --without-regexp - compile without January.RegExp lib
     --help           - show this help
 EOF
 }
 cleanup() { rm -f src/Makefile src/os_config.h test/Makefile; }
 die() { echo "ERROR: $1"; cleanup; exit 1; }
 CXX_TYPE=gcc
-ABI_VER=2
-BUILD_REGEXP=0
+CXX_STD=14
+LIBSUFF=$CXX_STD
 
 # Check params
 while [ "x$1" != x ]; do
     case $1 in
         --help)
             usage $0; exit 0 ;;
-        v1)
-            ABI_VER=1 ;;
-        v2)
-            ABI_VER=2 ;;
-        --with-gcc)
-            CXX_TYPE=gcc ;;
-        --with-clang)
-            CXX_TYPE=clang ;;
+        std=*)
+            CXX_STD=${1:4} ;;
+        compiler=*)
+            CXX_TYPE=${1:9} ;;
         --with-pic | pic)
             USE_PIC=1 ;;
-        --without-regexp)
-            BUILD_REGEXP=0 ;;
         *)
             echo "Unknow param $1"; usage $0; exit 1 ;;
     esac
@@ -54,35 +45,26 @@ FIND_SRC_EXPR="-name '*.cpp'"
 
 case $CXX_TYPE in
     gcc)
-        CXX=g++
+        CXX="g++ -std=c++$CXX_STD"
     ;;
     clang)
-        CXX=clang++
+        CXX="clang++ -std=c++$CXX_STD"
         CXX98_WARNS="$CXX98_WARNS -Wno-non-literal-null-conversion"
         WARNS_ALL="$WARNS_ALL -Wno-mismatched-tags"
     ;;
 esac
-
-case $ABI_VER in
-    1)
-        CXX="$CXX -std=c++98"
-        CFLAGS="$CFLAGS $CXX98_WARNS"
-        FIND_SRC_EXPR="$FIND_SRC_EXPR '!' -path '*.2/*'"
-    ;;
-    2)
-        CXX="$CXX -std=c++11"
-        #LIBNAME="${LIBNAME}2"
-    ;;
-esac
+if [ $CXX_STD = 98 ]; then
+    CFLAGS="$CFLAGS $CXX98_WARNS"
+fi
 CXX="$CXX -pthread"
 
 if [ "x$USE_PIC" != x ]; then
     echo "Using -fPIC mode"
-    LIBNAME="${LIBNAME}_pic"
+    LIBSUFF=${LIBSUFF}_pic
     CFLAGS="$CFLAGS -fPIC -fvisibility=hidden -fvisibility-inlines-hidden"
 fi
 
-LIBNAME="${LIBNAME}.a"
+LIBNAME="${LIBNAME}_${LIBSUFF}.a"
 
 case $OS in
     Linux)
@@ -134,6 +116,7 @@ s|@LIBNAME@|$LIBNAME|g
 s|@CXX@|$CXX|g
 s|@CFLAGS@|$CFLAGS|g
 s|@LIBS@|$TEST_LIBS|g
+s|@LIBSUFF@|$LIBSUFF|g
 s|@WARNS_ALL@|$WARNS_ALL|g
 " test/Makefile.in
 } > test/Makefile

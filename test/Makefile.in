@@ -3,7 +3,7 @@
 
 CC      = @CXX@
 CFLAGS  = @WARNS_ALL@
-LIBS = ../src/@LIBNAME@ -l__vic11 @LIBS@
+LIBS = ../src/@LIBNAME@ -l__vic@LIBSUFF@ @LIBS@
 
 SOURCES := $(wildcard *.cpp)
 BINARIES := $(SOURCES:.cpp=.test)
@@ -15,10 +15,10 @@ all: $(BINARIES) ;
 %.test: %.cpp ../src/@LIBNAME@
 	$(CC) -I../include @CFLAGS@ $(CFLAGS) -MMD -o $@ $< $(LIBS)
 
-regexp: LIBS += -lpcre
-
 ../src/@LIBNAME@:
 	cd ../src && $(MAKE) CFLAGS="$(CFLAGS)"
+
+-include $(SOURCES:.cpp=.d)
 
 clean:
 	rm -f *.test *.d rotatable.log* *.[bd]er
