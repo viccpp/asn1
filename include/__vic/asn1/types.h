@@ -26,7 +26,7 @@
 #include<memory>
 #include<vector>
 
-namespace __vic { namespace ASN1 {
+namespace __vic { namespace asn1 {
 
 using std::size_t;
 
@@ -513,9 +513,9 @@ public:
 //////////////////////////////////////////////////////////////////////////////
 //----------------------------------------------------------------------------
 #define SEQ_FIELD(index,name) \
-    ::__vic::ASN1::choose_type_tuple<index,self_type> \
+    ::__vic::asn1::choose_type_tuple<index,self_type> \
         &name() { return this->get<index>(); } \
-    ::__vic::ASN1::choose_type_tuple<index,self_type> \
+    ::__vic::asn1::choose_type_tuple<index,self_type> \
         const &name() const { return this->get<index>(); }
 //----------------------------------------------------------------------------
 template<class... Elems>

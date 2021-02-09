@@ -6,7 +6,7 @@
 #include<__vic/asn1/defs.h>
 #include<cstdio> // for std::snprintf()
 
-namespace __vic { namespace ASN1 {
+namespace __vic { namespace asn1 {
 
 namespace {
 const char * const universal_types_names[] =

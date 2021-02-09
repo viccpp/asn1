@@ -4,17 +4,17 @@
 
 #include<__vic/asn1/ber_decoder.h>
 
-namespace __vic { namespace ASN1 { namespace BER {
+namespace __vic { namespace asn1 { namespace ber {
 
 //----------------------------------------------------------------------------
-void DecoderBase::push_limit(size_t n)
+void decoder_base::push_limit(size_t n)
 {
     if(is_limited() && n > bytes_avail())
         throw format_error("nested length is too big");
     limits_push(n);
 }
 //----------------------------------------------------------------------------
-void DecoderBase::pop_limit()
+void decoder_base::pop_limit()
 {
     assert(!limits.empty());
     limit lim = limits_top();

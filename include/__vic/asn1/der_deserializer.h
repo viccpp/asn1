@@ -10,15 +10,15 @@
 #include<__vic/ascii.h>
 #include<type_traits>
 
-namespace __vic { namespace ASN1 {
+namespace __vic { namespace asn1 { namespace der {
 
 //////////////////////////////////////////////////////////////////////////////
 template<class StreamReader>
-class DERDeserializer : public BasicDeserializer<StreamReader>
+class deserializer : public ber::basic_deserializer<StreamReader>
 {
-    typedef BasicDeserializer<StreamReader> base;
+    typedef ber::basic_deserializer<StreamReader> base;
     typedef primitive_constructed pc_t;
-    friend DeserializerBase; // for DeserializerBase::choose_option(), etc.
+    friend ber::deserializer_base; // for deserializer_base::choose_option(), etc.
 
     using base::read_type;
     using base::read_definite_length;
@@ -78,7 +78,7 @@ public:
     typedef typename base::bad_format bad_format;
 
     template<class... Args>
-    explicit DERDeserializer(Args&&... args)
+    explicit deserializer(Args&&... args)
         : base(std::forward<Args>(args)...) {}
 
     using typename base::stream_reader_type;
@@ -123,7 +123,7 @@ public:
 //////////////////////////////////////////////////////////////////////////////
 //----------------------------------------------------------------------------
 template<class SR>
-void DERDeserializer<SR>::deserialize_lv(BOOLEAN &v, pc_t p_c)
+void deserializer<SR>::deserialize_lv(BOOLEAN &v, pc_t p_c)
 {
     check_primitive(p_c);
     uint8_t b = this->read_boolean_value();
@@ -138,7 +138,7 @@ void DERDeserializer<SR>::deserialize_lv(BOOLEAN &v, pc_t p_c)
 }
 //----------------------------------------------------------------------------
 template<class SR>
-void DERDeserializer<SR>::deserialize_str(CHARACTER_STRING &v, type_tag_t tag)
+void deserializer<SR>::deserialize_str(CHARACTER_STRING &v, type_tag_t tag)
 {
     try
     {
@@ -151,7 +151,7 @@ void DERDeserializer<SR>::deserialize_str(CHARACTER_STRING &v, type_tag_t tag)
 }
 //----------------------------------------------------------------------------
 template<class SR>
-void DERDeserializer<SR>::deserialize(OCTET_STRING &v)
+void deserializer<SR>::deserialize(OCTET_STRING &v)
 {
     try
     {
@@ -164,21 +164,7 @@ void DERDeserializer<SR>::deserialize(OCTET_STRING &v)
 }
 //----------------------------------------------------------------------------
 template<class SR>
-void DERDeserializer<SR>::deserialize(BOOLEAN &v)
-{
-    try
-    {
-        deserialize_lv(v, read_type(v.tag()));
-    }
-    catch(const std::exception &ex)
-    {
-        throw_cannot_read(v.tag(), ex);
-    }
-}
-//----------------------------------------------------------------------------
-template<class SR>
-template<tag_number_t Tag, class T, tag_class_t Cls>
-void DERDeserializer<SR>::deserialize(IMPLICIT<Tag,T,Cls> &v)
+void deserializer<SR>::deserialize(BOOLEAN &v)
 {
     try
     {
@@ -192,7 +178,21 @@ void DERDeserializer<SR>::deserialize(IMPLICIT<Tag,T,Cls> &v)
 //----------------------------------------------------------------------------
 template<class SR>
 template<tag_number_t Tag, class T, tag_class_t Cls>
-void DERDeserializer<SR>::deserialize(EXPLICIT<Tag,T,Cls> &v)
+void deserializer<SR>::deserialize(IMPLICIT<Tag,T,Cls> &v)
+{
+    try
+    {
+        deserialize_lv(v, read_type(v.tag()));
+    }
+    catch(const std::exception &ex)
+    {
+        throw_cannot_read(v.tag(), ex);
+    }
+}
+//----------------------------------------------------------------------------
+template<class SR>
+template<tag_number_t Tag, class T, tag_class_t Cls>
+void deserializer<SR>::deserialize(EXPLICIT<Tag,T,Cls> &v)
 {
     try
     {
@@ -206,7 +206,7 @@ void DERDeserializer<SR>::deserialize(EXPLICIT<Tag,T,Cls> &v)
 //----------------------------------------------------------------------------
 template<class SR>
 template<class... Elems>
-void DERDeserializer<SR>::deserialize(SEQUENCE<Elems...> &v)
+void deserializer<SR>::deserialize(SEQUENCE<Elems...> &v)
 {
     try
     {
@@ -220,7 +220,7 @@ void DERDeserializer<SR>::deserialize(SEQUENCE<Elems...> &v)
 //----------------------------------------------------------------------------
 template<class SR>
 template<class T, template<class,class> class SeqCont>
-void DERDeserializer<SR>::deserialize(SEQUENCE_OF<T,SeqCont> &v)
+void deserializer<SR>::deserialize(SEQUENCE_OF<T,SeqCont> &v)
 {
     try
     {
@@ -234,7 +234,7 @@ void DERDeserializer<SR>::deserialize(SEQUENCE_OF<T,SeqCont> &v)
 //----------------------------------------------------------------------------
 template<class SR>
 template<class... Opts>
-void DERDeserializer<SR>::deserialize(CHOICE<Opts...> &ch)
+void deserializer<SR>::deserialize(CHOICE<Opts...> &ch)
 {
     try
     {
@@ -248,7 +248,7 @@ void DERDeserializer<SR>::deserialize(CHOICE<Opts...> &ch)
 //----------------------------------------------------------------------------
 template<class SR>
 template<class OID, class... Opts>
-void DERDeserializer<SR>::deserialize(CLASS_CHOICE<OID,Opts...> &c)
+void deserializer<SR>::deserialize(CLASS_CHOICE<OID,Opts...> &c)
 {
     try
     {
@@ -261,6 +261,6 @@ void DERDeserializer<SR>::deserialize(CLASS_CHOICE<OID,Opts...> &c)
 }
 //----------------------------------------------------------------------------
 
-}} // namespace
+}}} // namespace
 
 #endif // header guard

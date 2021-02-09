@@ -10,10 +10,10 @@
 #include<__vic/asn1/types.h>
 #include<type_traits>
 
-namespace __vic { namespace ASN1 {
+namespace __vic { namespace asn1 { namespace ber {
 
 //////////////////////////////////////////////////////////////////////////////
-class SerializerBase
+class serializer_base
 {
     template<class Serializer>
     struct seq_serializer // "generic lambda"
@@ -65,12 +65,12 @@ protected:
 };
 //////////////////////////////////////////////////////////////////////////////
 template<class StreamWriter>
-class BasicSerializer : public SerializerBase
+class basic_serializer : public serializer_base
 {
-    BER::Coder<StreamWriter> wr;
+    ber::encoder<StreamWriter> wr;
 protected:
     template<class... Args>
-    explicit BasicSerializer(Args&&... args)
+    explicit basic_serializer(Args&&... args)
         : wr(std::forward<Args>(args)...) {}
 
     void write_type(type_tag_t tag, primitive_constructed p_c)
@@ -90,7 +90,7 @@ protected:
     void write_indefined_length() { wr.write_indefined_length(); }
     void write_eoc_tlv() { wr.write_eoc_tlv(); }
 
-    using SerializerBase::serialize_value;
+    using serializer_base::serialize_value;
     void serialize_value(const OCTET_STRING &v)
         { write_value_bytes(v); }
     void serialize_value(const CHARACTER_STRING &v)
@@ -152,7 +152,7 @@ public:
 //////////////////////////////////////////////////////////////////////////////
 //----------------------------------------------------------------------------
 template<class SW>
-void BasicSerializer<SW>::serialize_raw(const raw &v, type_tag_t tag)
+void basic_serializer<SW>::serialize_raw(const raw &v, type_tag_t tag)
 {
     write_primitive_type_short(tag);
     write_length(v.length());
@@ -160,7 +160,7 @@ void BasicSerializer<SW>::serialize_raw(const raw &v, type_tag_t tag)
 }
 //----------------------------------------------------------------------------
 template<class SW>
-void BasicSerializer<SW>::serialize_str(const CHARACTER_STRING &v, type_tag_t tag)
+void basic_serializer<SW>::serialize_str(const CHARACTER_STRING &v, type_tag_t tag)
 {
     write_primitive_type_short(tag);
     write_length(v.length());
@@ -169,7 +169,7 @@ void BasicSerializer<SW>::serialize_str(const CHARACTER_STRING &v, type_tag_t ta
 //----------------------------------------------------------------------------
 template<class SW>
 template<class Int>
-void BasicSerializer<SW>::serialize_int(integer<Int> v)
+void basic_serializer<SW>::serialize_int(integer<Int> v)
 {
     write_primitive_type_short(v.tag());
     wr.write_integer_with_length(v.as_int());
@@ -177,14 +177,14 @@ void BasicSerializer<SW>::serialize_int(integer<Int> v)
 //----------------------------------------------------------------------------
 template<class SW>
 template<class Enum>
-void BasicSerializer<SW>::serialize(ENUMERATED<Enum> v)
+void basic_serializer<SW>::serialize(ENUMERATED<Enum> v)
 {
     write_primitive_type_short(v.tag());
     wr.write_integer_with_length(v.as_int());
 }
 //----------------------------------------------------------------------------
 template<class SW>
-void BasicSerializer<SW>::serialize(BOOLEAN v)
+void basic_serializer<SW>::serialize(BOOLEAN v)
 {
     write_primitive_type_short(v.tag());
     write_length_short(1);
@@ -192,12 +192,12 @@ void BasicSerializer<SW>::serialize(BOOLEAN v)
 }
 //----------------------------------------------------------------------------
 template<class SW>
-void BasicSerializer<SW>::serialize(NULL_ )
+void basic_serializer<SW>::serialize(NULL_ )
 {
     wr.write_null_tlv();
 }
 //----------------------------------------------------------------------------
 
-}} // namespace
+}}} // namespace
 
 #endif // header guard

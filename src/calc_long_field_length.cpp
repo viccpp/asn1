@@ -4,7 +4,7 @@
 
 #include<__vic/asn1/ber.h>
 
-namespace __vic { namespace ASN1 { namespace BER {
+namespace __vic { namespace asn1 { namespace ber {
 
 //----------------------------------------------------------------------------
 size_t impl::calc_long_type_field_length(tag_number_t tag)

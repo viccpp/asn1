@@ -10,7 +10,7 @@
 #include<__vic/string_buffer.h>
 #include<string>
 
-namespace __vic { namespace ASN1 {
+namespace __vic { namespace asn1 {
 
 typedef unsigned tag_number_t;
 //////////////////////////////////////////////////////////////////////////////

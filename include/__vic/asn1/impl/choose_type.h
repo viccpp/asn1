@@ -6,7 +6,7 @@
 #ifndef __VIC_ASN1_IMPL_CHOOSE_TYPE_H
 #define __VIC_ASN1_IMPL_CHOOSE_TYPE_H
 
-namespace __vic { namespace ASN1 {
+namespace __vic { namespace asn1 {
 
 template<unsigned , class... > struct choose_type_ {}; // SFINAE-friendly
 template<unsigned , class > struct choose_type_tuple_ {}; // SFINAE-friendly

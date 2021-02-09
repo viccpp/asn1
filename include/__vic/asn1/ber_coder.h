@@ -8,7 +8,7 @@
 
 #include<__vic/asn1/ber.h>
 
-namespace __vic { namespace ASN1 { namespace BER {
+namespace __vic { namespace asn1 { namespace ber {
 
 //////////////////////////////////////////////////////////////////////////////
 // Desired StreamWriter's interface:
@@ -21,7 +21,7 @@ namespace __vic { namespace ASN1 { namespace BER {
 //  };
 //////////////////////////////////////////////////////////////////////////////
 template<class StreamWriter>
-class Coder
+class encoder
 {
     StreamWriter w;
 public:
@@ -31,10 +31,10 @@ public:
 
 #if __cplusplus >= 201103L // C++11
     template<class... Args>
-    explicit Coder(Args&&... args) : w(std::forward<Args>(args)...) {}
+    explicit encoder(Args&&... args) : w(std::forward<Args>(args)...) {}
 #else // C++98
-    Coder() {}
-    explicit Coder(const StreamWriter &s) : w(s) {}
+    encoder() {}
+    explicit encoder(const StreamWriter &s) : w(s) {}
 #endif
 
     void write(uint8_t byte) { w.write(byte); }
@@ -108,7 +108,7 @@ integer_encoder<TInt>::integer_encoder(TInt v) : buf_ptr(1)
 } // namespace
 //----------------------------------------------------------------------------
 template<class SW>
-void Coder<SW>::write_type(
+void encoder<SW>::write_type(
     tag_class_t cls, tag_number_t tag, primitive_constructed p_c)
 {
     if(tag < 0x1FU) // trivial case - low-tag-number form
@@ -130,7 +130,7 @@ void Coder<SW>::write_type(
 }
 //----------------------------------------------------------------------------
 template<class SW>
-void Coder<SW>::write_length(size_t len)
+void encoder<SW>::write_length(size_t len)
 {
     if(len <= 0x7FU) // trivial case - short form
     {
@@ -150,14 +150,14 @@ void Coder<SW>::write_length(size_t len)
 //----------------------------------------------------------------------------
 template<class SW>
 template<class TInt>
-void Coder<SW>::write_integer(TInt v)
+void encoder<SW>::write_integer(TInt v)
 {
     impl::integer_encoder<TInt>(v).write(*this);
 }
 //----------------------------------------------------------------------------
 template<class SW>
 template<class TInt>
-void Coder<SW>::write_integer_with_length(TInt v)
+void encoder<SW>::write_integer_with_length(TInt v)
 {
     impl::integer_encoder<TInt> enc(v);
     // wrile length-field

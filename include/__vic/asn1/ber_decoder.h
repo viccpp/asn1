@@ -12,10 +12,10 @@
 #include<algorithm>
 #include<vector>
 
-namespace __vic { namespace ASN1 { namespace BER {
+namespace __vic { namespace asn1 { namespace ber {
 
 //////////////////////////////////////////////////////////////////////////////
-class DecoderBase
+class decoder_base
 {
     class limit
     {
@@ -94,7 +94,7 @@ public:
 //  };
 //////////////////////////////////////////////////////////////////////////////
 template<class StreamReader>
-class Decoder : public DecoderBase
+class decoder : public decoder_base
 {
     StreamReader r;
     bool next_byte_is_0(size_t & );
@@ -106,10 +106,10 @@ public:
 
 #if __cplusplus >= 201103L // C++11
     template<class... Args>
-    explicit Decoder(Args&&... args) : r(std::forward<Args>(args)...) {}
+    explicit decoder(Args&&... args) : r(std::forward<Args>(args)...) {}
 #else // C++98
-    Decoder() {}
-    explicit Decoder(const StreamReader &s) : r(s) {}
+    decoder() {}
+    explicit decoder(const StreamReader &s) : r(s) {}
 #endif
 
     bool read(uint8_t & );
@@ -139,7 +139,7 @@ public:
 };
 //////////////////////////////////////////////////////////////////////////////
 //----------------------------------------------------------------------------
-inline bool DecoderBase::is_eoc(const type_field_t &t)
+inline bool decoder_base::is_eoc(const type_field_t &t)
 {
 #if __cplusplus >= 201103L // C++11
     if(t.tag() != EOC)
@@ -152,7 +152,7 @@ inline bool DecoderBase::is_eoc(const type_field_t &t)
 }
 //----------------------------------------------------------------------------
 template<class SR>
-bool Decoder<SR>::read(uint8_t &byte)
+bool decoder<SR>::read(uint8_t &byte)
 {
     if(this->is_unlimited()) return r.read(byte);
     if(this->bytes_avail() == 0 || !r.read(byte)) return false;
@@ -161,7 +161,7 @@ bool Decoder<SR>::read(uint8_t &byte)
 }
 //----------------------------------------------------------------------------
 template<class SR>
-size_t Decoder<SR>::read_max(void *bytes, size_t n)
+size_t decoder<SR>::read_max(void *bytes, size_t n)
 {
     if(this->is_unlimited()) return r.read_max(bytes, n);
     size_t res = r.read_max(bytes, std::min(this->bytes_avail(), n));
@@ -170,7 +170,7 @@ size_t Decoder<SR>::read_max(void *bytes, size_t n)
 }
 //----------------------------------------------------------------------------
 template<class SR>
-void Decoder<SR>::skip_exact(size_t n)
+void decoder<SR>::skip_exact(size_t n)
 {
     if(this->is_unlimited())
     {
@@ -186,7 +186,7 @@ void Decoder<SR>::skip_exact(size_t n)
 }
 //----------------------------------------------------------------------------
 template<class SR>
-void Decoder<SR>::skip_rest()
+void decoder<SR>::skip_rest()
 {
     if(this->is_unlimited())
     {
@@ -204,7 +204,7 @@ void Decoder<SR>::skip_rest()
 }
 //----------------------------------------------------------------------------
 template<class SR>
-bool Decoder<SR>::read_type(
+bool decoder<SR>::read_type(
     tag_class_t &cls, tag_number_t &tag, primitive_constructed &p_c)
 {
     uint8_t b;
@@ -247,7 +247,7 @@ bool Decoder<SR>::read_type(
 //----------------------------------------------------------------------------
 template<class SR>
 template<class TUInt>
-inline TUInt Decoder<SR>::read_type_raw_rest(uint8_t b)
+inline TUInt decoder<SR>::read_type_raw_rest(uint8_t b)
 {
     if((b & 0x1FU) != 0x1FU) return b; // single byte
     // more than one byte
@@ -265,7 +265,7 @@ inline TUInt Decoder<SR>::read_type_raw_rest(uint8_t b)
 //----------------------------------------------------------------------------
 template<class SR>
 template<class TUInt>
-bool Decoder<SR>::read_type_raw(TUInt &type_field)
+bool decoder<SR>::read_type_raw(TUInt &type_field)
 {
     uint8_t b;
     if(!read(b)) return false;
@@ -274,7 +274,7 @@ bool Decoder<SR>::read_type_raw(TUInt &type_field)
 }
 //----------------------------------------------------------------------------
 template<class SR>
-bool Decoder<SR>::read_length(size_t &len_)
+bool decoder<SR>::read_length(size_t &len_)
 {
     uint8_t b;
     if(!read(b)) throw truncated_stream_error(); // no length-field
@@ -307,7 +307,7 @@ bool Decoder<SR>::read_length(size_t &len_)
 }
 //----------------------------------------------------------------------------
 template<class SR>
-size_t Decoder<SR>::read_definite_length()
+size_t decoder<SR>::read_definite_length()
 {
     size_t len;
     if(!read_length(len))
@@ -316,7 +316,7 @@ size_t Decoder<SR>::read_definite_length()
 }
 //----------------------------------------------------------------------------
 template<class SR>
-inline uint8_t Decoder<SR>::read_value_byte()
+inline uint8_t decoder<SR>::read_value_byte()
 {
     uint8_t b;
     if(!read(b)) throw truncated_stream_error(); // not enough bytes of value
@@ -324,7 +324,7 @@ inline uint8_t Decoder<SR>::read_value_byte()
 }
 //----------------------------------------------------------------------------
 template<class SR>
-inline bool Decoder<SR>::next_byte_is_0(size_t &len)
+inline bool decoder<SR>::next_byte_is_0(size_t &len)
 {
     uint8_t b = read_value_byte();
     len--;
@@ -333,7 +333,7 @@ inline bool Decoder<SR>::next_byte_is_0(size_t &len)
 //----------------------------------------------------------------------------
 template<class SR>
 template<class TInt>
-TInt Decoder<SR>::read_integer(size_t len)
+TInt decoder<SR>::read_integer(size_t len)
 {
     if(len == 0) throw format_error("length can't be 0");
     size_t c = len;
@@ -362,13 +362,13 @@ TInt Decoder<SR>::read_integer(size_t len)
 //----------------------------------------------------------------------------
 template<class SR>
 template<class TInt>
-inline TInt Decoder<SR>::read_integer_lv()
+inline TInt decoder<SR>::read_integer_lv()
 {
     return read_integer<TInt>(read_definite_length());
 }
 //----------------------------------------------------------------------------
 template<class SR>
-inline void Decoder<SR>::read_eoc_length()
+inline void decoder<SR>::read_eoc_length()
 {
     size_t len;
     if(!read_length(len))
@@ -378,7 +378,7 @@ inline void Decoder<SR>::read_eoc_length()
 }
 //----------------------------------------------------------------------------
 template<class SR>
-bool Decoder<SR>::read_type_or_eoc(type_field_t &t)
+bool decoder<SR>::read_type_or_eoc(type_field_t &t)
 {
     if(!read_type(t)) throw truncated_stream_error(); // no type-field found (EOF)
     if(!is_eoc(t)) return true;
@@ -388,7 +388,7 @@ bool Decoder<SR>::read_type_or_eoc(type_field_t &t)
 //----------------------------------------------------------------------------
 template<class SR>
 template<class TUInt>
-bool Decoder<SR>::read_type_raw_or_eoc(TUInt &t)
+bool decoder<SR>::read_type_raw_or_eoc(TUInt &t)
 {
     if(!read_type_raw(t)) throw truncated_stream_error(); // no type-field found (EOF)
     switch(t)

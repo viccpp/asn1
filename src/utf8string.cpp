@@ -7,7 +7,7 @@
 #include<__vic/readers/string.h>
 #include<__vic/readers/cstring.h>
 
-namespace __vic { namespace ASN1 {
+namespace __vic { namespace asn1 {
 
 //----------------------------------------------------------------------------
 size_t UTF8String::length_chars() const

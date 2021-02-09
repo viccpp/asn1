@@ -11,17 +11,16 @@
 #include<__vic/asn1/impl/der_pc_traits.h>
 #include<type_traits>
 
-namespace __vic { namespace ASN1 {
+namespace __vic { namespace asn1 { namespace ber {
 
 //////////////////////////////////////////////////////////////////////////////
 template<class StreamWriter>
-class BERSerializer : private BasicSerializer<StreamWriter>
+class serializer : private ber::basic_serializer<StreamWriter>
 {
-    typedef BasicSerializer<StreamWriter> base;
+    typedef ber::basic_serializer<StreamWriter> base;
 
     template<class T>
-    static size_t value_length(const T &v)
-        { return impl::ber_encoded_length(v); }
+    static size_t value_length(const T &v) { return ber::encoded_length(v); }
 
     using base::write_type;
     using base::write_primitive_type;
@@ -51,7 +50,7 @@ class BERSerializer : private BasicSerializer<StreamWriter>
     bool m_use_definite = false;
 public:
     template<class... Args>
-    explicit BERSerializer(Args&&... args)
+    explicit serializer(Args&&... args)
         : base(std::forward<Args>(args)...) {}
 
     using typename base::stream_writer_type;
@@ -60,11 +59,11 @@ public:
     using base::serialize;
 
     template<tag_number_t Tag, class T, tag_class_t Cls>
-    typename std::enable_if<impl::is_der_primitive<T>()>::type
+    typename std::enable_if<der::is_primitive<T>()>::type
         serialize(const IMPLICIT<Tag,T,Cls> & );
 
     template<tag_number_t Tag, class T, tag_class_t Cls>
-    typename std::enable_if<impl::is_der_constructed<T>()>::type
+    typename std::enable_if<der::is_constructed<T>()>::type
         serialize(const IMPLICIT<Tag,T,Cls> & );
 
     template<tag_number_t Tag, class T, tag_class_t Cls>
@@ -91,7 +90,7 @@ public:
 //----------------------------------------------------------------------------
 template<class SW>
 template<class T>
-inline void BERSerializer<SW>::serialize_constructed_lv(const T &v)
+inline void serializer<SW>::serialize_constructed_lv(const T &v)
 {
     if(m_use_definite)
     {
@@ -108,8 +107,8 @@ inline void BERSerializer<SW>::serialize_constructed_lv(const T &v)
 //----------------------------------------------------------------------------
 template<class SW>
 template<tag_number_t Tag, class T, tag_class_t Cls>
-typename std::enable_if<impl::is_der_primitive<T>()>::type
-    BERSerializer<SW>::serialize(const IMPLICIT<Tag,T,Cls> &v)
+typename std::enable_if<der::is_primitive<T>()>::type
+    serializer<SW>::serialize(const IMPLICIT<Tag,T,Cls> &v)
 {
     write_primitive_type(v.tag());
     write_length(value_length(v));
@@ -118,8 +117,8 @@ typename std::enable_if<impl::is_der_primitive<T>()>::type
 //----------------------------------------------------------------------------
 template<class SW>
 template<tag_number_t Tag, class T, tag_class_t Cls>
-typename std::enable_if<impl::is_der_constructed<T>()>::type
-    BERSerializer<SW>::serialize(const IMPLICIT<Tag,T,Cls> &v)
+typename std::enable_if<der::is_constructed<T>()>::type
+    serializer<SW>::serialize(const IMPLICIT<Tag,T,Cls> &v)
 {
     write_constructed_type(v.tag());
     serialize_constructed_lv(v);
@@ -127,7 +126,7 @@ typename std::enable_if<impl::is_der_constructed<T>()>::type
 //----------------------------------------------------------------------------
 template<class SW>
 template<tag_number_t Tag, class T, tag_class_t Cls>
-void BERSerializer<SW>::serialize(const EXPLICIT<Tag,T,Cls> &v)
+void serializer<SW>::serialize(const EXPLICIT<Tag,T,Cls> &v)
 {
     write_constructed_type(v.tag());
     serialize_constructed_lv(v);
@@ -135,7 +134,7 @@ void BERSerializer<SW>::serialize(const EXPLICIT<Tag,T,Cls> &v)
 //----------------------------------------------------------------------------
 template<class SW>
 template<class... Elems>
-void BERSerializer<SW>::serialize(const SEQUENCE<Elems...> &v)
+void serializer<SW>::serialize(const SEQUENCE<Elems...> &v)
 {
     write_constructed_type_short(v.tag());
     serialize_constructed_lv(v);
@@ -143,7 +142,7 @@ void BERSerializer<SW>::serialize(const SEQUENCE<Elems...> &v)
 //----------------------------------------------------------------------------
 template<class SW>
 template<class T, template<class,class> class SeqCont>
-void BERSerializer<SW>::serialize(const SEQUENCE_OF<T,SeqCont> &v)
+void serializer<SW>::serialize(const SEQUENCE_OF<T,SeqCont> &v)
 {
     write_constructed_type_short(v.tag());
     serialize_constructed_lv(v);
@@ -151,19 +150,19 @@ void BERSerializer<SW>::serialize(const SEQUENCE_OF<T,SeqCont> &v)
 //----------------------------------------------------------------------------
 template<class SW>
 template<class... Opts>
-void BERSerializer<SW>::serialize(const CHOICE<Opts...> &ch)
+void serializer<SW>::serialize(const CHOICE<Opts...> &ch)
 {
     this->serialize_choice(*this, ch);
 }
 //----------------------------------------------------------------------------
 template<class SW>
 template<class OID, class... Opts>
-void BERSerializer<SW>::serialize(const CLASS_CHOICE<OID,Opts...> &c)
+void serializer<SW>::serialize(const CLASS_CHOICE<OID,Opts...> &c)
 {
     this->serialize_class(*this, c);
 }
 //----------------------------------------------------------------------------
 
-}} // namespace
+}}} // namespace
 
 #endif // header guard

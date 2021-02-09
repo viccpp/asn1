@@ -11,7 +11,7 @@
 #include<cstddef>
 #include<cassert>
 
-namespace __vic { namespace ASN1 { namespace BER {
+namespace __vic { namespace asn1 { namespace ber {
 
 using std::size_t;
 

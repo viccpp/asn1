@@ -14,10 +14,10 @@
 #include<type_traits>
 #include<algorithm>
 
-namespace __vic { namespace ASN1 {
+namespace __vic { namespace asn1 { namespace ber {
 
 //////////////////////////////////////////////////////////////////////////////
-struct DeserializerBase
+struct deserializer_base
 {
     struct bad_format : public __vic::exception
     {
@@ -238,12 +238,12 @@ private:
 };
 //////////////////////////////////////////////////////////////////////////////
 template<class StreamReader>
-class BasicDeserializer : public DeserializerBase
+class basic_deserializer : public deserializer_base
 {
-    BER::Decoder<StreamReader> rd;
+    ber::decoder<StreamReader> rd;
 protected:
     template<class... Args>
-    explicit BasicDeserializer(Args&&... args)
+    explicit basic_deserializer(Args&&... args)
         : rd(std::forward<Args>(args)...) {}
 
     type_field_t read_type();
@@ -266,7 +266,7 @@ protected:
     template<class Raw>
     void deserialize_raw_lv(Raw & , pc_t );
 
-    using DeserializerBase::deserialize_lv;
+    using deserializer_base::deserialize_lv;
     template<class Int>
     void deserialize_lv(integer<Int> & , pc_t );
     template<class Enum>
@@ -307,25 +307,25 @@ public:
 };
 //////////////////////////////////////////////////////////////////////////////
 //----------------------------------------------------------------------------
-inline void DeserializerBase::check_type(type_tag_t t, type_tag_t expected)
+inline void deserializer_base::check_type(type_tag_t t, type_tag_t expected)
 {
     if(t != expected) throw_unexpected_type(t, expected);
 }
 //----------------------------------------------------------------------------
-inline void DeserializerBase::check_constructness(pc_t p_c, pc_t expected)
+inline void deserializer_base::check_constructness(pc_t p_c, pc_t expected)
 {
     if(p_c != expected)
         throw bad_format("Invalid type \"constructness\" is used");
 }
 //----------------------------------------------------------------------------
-inline void DeserializerBase::check_primitive(pc_t p_c)
+inline void deserializer_base::check_primitive(pc_t p_c)
 {
     //check_constructness(p_c, primitive);
     if(p_c != primitive)
         throw bad_format("Only primitive encoding permitted");
 }
 //----------------------------------------------------------------------------
-inline void DeserializerBase::check_constructed(pc_t p_c)
+inline void deserializer_base::check_constructed(pc_t p_c)
 {
     //check_constructness(p_c, constructed);
     if(p_c != constructed)
@@ -333,7 +333,7 @@ inline void DeserializerBase::check_constructed(pc_t p_c)
 }
 //----------------------------------------------------------------------------
 template<class SR>
-auto BasicDeserializer<SR>::read_type() -> type_field_t
+auto basic_deserializer<SR>::read_type() -> type_field_t
 {
     type_field_t t;
     if(!rd.read_type(t)) throw bad_format("No type-field found (EOF)");
@@ -341,7 +341,7 @@ auto BasicDeserializer<SR>::read_type() -> type_field_t
 }
 //----------------------------------------------------------------------------
 template<class SR>
-auto BasicDeserializer<SR>::read_type(type_tag_t expected) -> pc_t
+auto basic_deserializer<SR>::read_type(type_tag_t expected) -> pc_t
 {
     auto t = read_type();
     check_type(t.tag(), expected);
@@ -350,7 +350,7 @@ auto BasicDeserializer<SR>::read_type(type_tag_t expected) -> pc_t
 //----------------------------------------------------------------------------
 template<class SR>
 template<class Str>
-inline void BasicDeserializer<SR>::read_value_bytes(Str &v, size_t len)
+inline void basic_deserializer<SR>::read_value_bytes(Str &v, size_t len)
 {
     v.clear();
     append_value_bytes(v, len);
@@ -358,7 +358,7 @@ inline void BasicDeserializer<SR>::read_value_bytes(Str &v, size_t len)
 //----------------------------------------------------------------------------
 template<class SR>
 template<class Str>
-void BasicDeserializer<SR>::append_value_bytes(Str &v, size_t len)
+void basic_deserializer<SR>::append_value_bytes(Str &v, size_t len)
 {
     if(len == 0) return;
     char buf[256];
@@ -374,14 +374,14 @@ void BasicDeserializer<SR>::append_value_bytes(Str &v, size_t len)
 }
 //----------------------------------------------------------------------------
 template<class SR>
-uint8_t BasicDeserializer<SR>::read_boolean_value()
+uint8_t basic_deserializer<SR>::read_boolean_value()
 {
     if(read_definite_length() != 1) throw bad_format("Invalid value length");
     return rd.read_value_byte();
 }
 //----------------------------------------------------------------------------
 template<class SR>
-void BasicDeserializer<SR>::skip_eoc_tlv()
+void basic_deserializer<SR>::skip_eoc_tlv()
 {
     if(!rd.is_eoc(read_type())) throw bad_format("EOC expected");
     rd.read_eoc_length();
@@ -389,7 +389,7 @@ void BasicDeserializer<SR>::skip_eoc_tlv()
 //----------------------------------------------------------------------------
 template<class SR>
 template<class Raw>
-void BasicDeserializer<SR>::deserialize_raw_lv(Raw &v, pc_t p_c)
+void basic_deserializer<SR>::deserialize_raw_lv(Raw &v, pc_t p_c)
 {
     check_primitive(p_c);
     read_value_bytes(v, read_definite_length());
@@ -397,7 +397,7 @@ void BasicDeserializer<SR>::deserialize_raw_lv(Raw &v, pc_t p_c)
 //----------------------------------------------------------------------------
 template<class SR>
 template<class Int>
-void BasicDeserializer<SR>::deserialize_lv(integer<Int> &v, pc_t p_c)
+void basic_deserializer<SR>::deserialize_lv(integer<Int> &v, pc_t p_c)
 {
     check_primitive(p_c);
     v = read_integer<Int>(read_definite_length());
@@ -405,14 +405,14 @@ void BasicDeserializer<SR>::deserialize_lv(integer<Int> &v, pc_t p_c)
 //----------------------------------------------------------------------------
 template<class SR>
 template<class Enum>
-void BasicDeserializer<SR>::deserialize_lv(ENUMERATED<Enum> &v, pc_t p_c)
+void basic_deserializer<SR>::deserialize_lv(ENUMERATED<Enum> &v, pc_t p_c)
 {
     check_primitive(p_c);
     v.assign(read_integer<decltype(v.as_int())>(read_definite_length()));
 }
 //----------------------------------------------------------------------------
 template<class SR>
-void BasicDeserializer<SR>::deserialize_lv(NULL_ & , pc_t p_c)
+void basic_deserializer<SR>::deserialize_lv(NULL_ & , pc_t p_c)
 {
     check_primitive(p_c);
     if(read_definite_length() != 0) throw bad_format("Invalid value length");
@@ -420,7 +420,7 @@ void BasicDeserializer<SR>::deserialize_lv(NULL_ & , pc_t p_c)
 //----------------------------------------------------------------------------
 template<class SR>
 template<class Int>
-void BasicDeserializer<SR>::deserialize_int(integer<Int> &v)
+void basic_deserializer<SR>::deserialize_int(integer<Int> &v)
 {
     try
     {
@@ -433,7 +433,7 @@ void BasicDeserializer<SR>::deserialize_int(integer<Int> &v)
 }
 //----------------------------------------------------------------------------
 template<class SR>
-void BasicDeserializer<SR>::deserialize(NULL_ &v)
+void basic_deserializer<SR>::deserialize(NULL_ &v)
 {
     try
     {
@@ -447,7 +447,7 @@ void BasicDeserializer<SR>::deserialize(NULL_ &v)
 //----------------------------------------------------------------------------
 template<class SR>
 template<class Enum>
-void BasicDeserializer<SR>::deserialize(ENUMERATED<Enum> &v)
+void basic_deserializer<SR>::deserialize(ENUMERATED<Enum> &v)
 {
     try
     {
@@ -460,7 +460,7 @@ void BasicDeserializer<SR>::deserialize(ENUMERATED<Enum> &v)
 }
 //----------------------------------------------------------------------------
 template<class SR>
-void BasicDeserializer<SR>::deserialize(integer<raw> &v)
+void basic_deserializer<SR>::deserialize(integer<raw> &v)
 {
     try
     {
@@ -473,7 +473,7 @@ void BasicDeserializer<SR>::deserialize(integer<raw> &v)
 }
 //----------------------------------------------------------------------------
 template<class SR>
-void BasicDeserializer<SR>::deserialize(REAL<raw> &v)
+void basic_deserializer<SR>::deserialize(REAL<raw> &v)
 {
     try
     {
@@ -486,7 +486,7 @@ void BasicDeserializer<SR>::deserialize(REAL<raw> &v)
 }
 //----------------------------------------------------------------------------
 template<class Deserializer, class... Opts>
-inline bool DeserializerBase::deserialize_choice_option(
+inline bool deserializer_base::deserialize_choice_option(
     Deserializer &ds, CHOICE<Opts...> &ch, const type_field_t &t)
 {
     try {
@@ -499,7 +499,7 @@ inline bool DeserializerBase::deserialize_choice_option(
 }
 //----------------------------------------------------------------------------
 template<class Deserializer, class... Opts>
-inline void DeserializerBase::deserialize_choice_lv(
+inline void deserializer_base::deserialize_choice_lv(
     Deserializer &ds, CHOICE<Opts...> &ch, const type_field_t &t)
 {
     if(!deserialize_choice_option(ds, ch, t))
@@ -508,7 +508,7 @@ inline void DeserializerBase::deserialize_choice_lv(
 }
 //----------------------------------------------------------------------------
 template<class Deserializer, class OID, class... Opts>
-inline void DeserializerBase::deserialize_class_option(
+inline void deserializer_base::deserialize_class_option(
     Deserializer &ds, CLASS_CHOICE<OID,Opts...> &ch, OID &&oid)
 {
     try {
@@ -521,7 +521,7 @@ inline void DeserializerBase::deserialize_class_option(
 }
 //----------------------------------------------------------------------------
 template<class Deserializer, class OID, class... Opts>
-inline void DeserializerBase::deserialize_class_lv(
+inline void deserializer_base::deserialize_class_lv(
     Deserializer &ds, CLASS_CHOICE<OID,Opts...> &ch, pc_t pc)
 {
     OID oid;
@@ -530,7 +530,7 @@ inline void DeserializerBase::deserialize_class_lv(
 }
 //----------------------------------------------------------------------------
 template<class Deserializer, class OID, class... Opts>
-inline void DeserializerBase::deserialize_class(
+inline void deserializer_base::deserialize_class(
     Deserializer &ds, CLASS_CHOICE<OID,Opts...> &ch)
 {
     OID oid;
@@ -539,6 +539,6 @@ inline void DeserializerBase::deserialize_class(
 }
 //----------------------------------------------------------------------------
 
-}} // namespace
+}}} // namespace
 
 #endif // header guard

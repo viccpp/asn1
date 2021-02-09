@@ -13,8 +13,8 @@
 #include<fstream>
 #include<cassert>
 
-namespace ASN1 = __vic::ASN1;
-using namespace ASN1;
+namespace asn1 = __vic::asn1;
+using namespace asn1;
 
 //////////////////////////////////////////////////////////////////////////////
 class ostream_writer
@@ -57,16 +57,16 @@ public:
 };
 //////////////////////////////////////////////////////////////////////////////
 
-template class BER::Coder<ostream_writer>;
-template class BER::Decoder<istream_reader>;
+template class ber::encoder<ostream_writer>;
+template class ber::decoder<istream_reader>;
 
 //----------------------------------------------------------------------------
 void encoding_test(const char *fname = "asn1.ber")
 {
     std::ofstream file(fname, std::ios::binary);
     assert(file.is_open());
-    BER::Coder<ostream_writer> out((ostream_writer(file)));
-    out.write_type(ASN1::universal, 2, ASN1::primitive); // INTEGER
+    ber::encoder<ostream_writer> out((ostream_writer(file)));
+    out.write_type(asn1::universal, 2, asn1::primitive); // INTEGER
     out.write_integer_with_length(666);
 }
 //----------------------------------------------------------------------------
@@ -74,12 +74,12 @@ void decoding_test(const char *fname = "asn1.ber")
 {
     std::ifstream file(fname, std::ios::binary);
     assert(file.is_open());
-    BER::Decoder<istream_reader> in((istream_reader(file)));
+    ber::decoder<istream_reader> in((istream_reader(file)));
 
-    ASN1::type_field_t t;
+    asn1::type_field_t t;
     assert(in.read_type(t));
-    assert(t.tag_class() == ASN1::universal && t.tag_number() == 2);
-    assert(t.p_c() == ASN1::primitive);
+    assert(t.tag_class() == asn1::universal && t.tag_number() == 2);
+    assert(t.p_c() == asn1::primitive);
 
     std::size_t len;
     assert(in.read_length(len));
@@ -95,7 +95,7 @@ void serializeBER(const T &v, const char *fname = "res.ber")
 {
     std::ofstream file(fname, std::ios::binary);
     assert(file.is_open());
-    ASN1::BERSerializer<ostream_writer> s{ostream_writer{file}};
+    asn1::ber::serializer<ostream_writer> s{ostream_writer{file}};
     //s.use_definite(true);
     s.serialize(v);
 }
@@ -105,7 +105,7 @@ void serializeDER(const T &v, const char *fname = "res.der")
 {
     std::ofstream file(fname, std::ios::binary);
     assert(file.is_open());
-    ASN1::DERSerializer<ostream_writer> s{ostream_writer{file}};
+    asn1::der::serializer<ostream_writer> s{ostream_writer{file}};
     s.serialize(v);
 }
 //----------------------------------------------------------------------------
@@ -114,7 +114,7 @@ void deserializeBER(T &v, const char *fname = "res.ber")
 {
     std::ifstream file(fname, std::ios::binary);
     assert(file.is_open());
-    ASN1::BERDeserializer<istream_reader> s{istream_reader{file}};
+    asn1::ber::deserializer<istream_reader> s{istream_reader{file}};
     s.deserialize(v);
 }
 //----------------------------------------------------------------------------
@@ -123,14 +123,14 @@ void deserializeDER(T &v, const char *fname = "res.der")
 {
     std::ifstream file(fname, std::ios::binary);
     assert(file.is_open());
-    ASN1::DERDeserializer<istream_reader> s{istream_reader{file}};
+    asn1::der::deserializer<istream_reader> s{istream_reader{file}};
     s.deserialize(v);
 }
 //----------------------------------------------------------------------------
 
 enum Status { stOk = 1, stError = 2 };
 
-namespace __vic { namespace ASN1 {
+namespace __vic { namespace asn1 {
 //---------------------------------------------------------------------------
 // Validator for a deserializer
 template<>
@@ -372,9 +372,9 @@ int main()
 {
     try
     {
-        std::cout << to_text(ASN1::type_tag_t(2, ASN1::universal)) << std::endl;
-        std::cout << to_text(ASN1::type_tag_t(0, ASN1::context_specific)) << std::endl;
-        std::cout << to_text(ASN1::type_tag_t(3, ASN1::application)) << std::endl;
+        std::cout << to_text(asn1::type_tag_t(2, asn1::universal)) << std::endl;
+        std::cout << to_text(asn1::type_tag_t(0, asn1::context_specific)) << std::endl;
+        std::cout << to_text(asn1::type_tag_t(3, asn1::application)) << std::endl;
 
         encoding_test();
         decoding_test();

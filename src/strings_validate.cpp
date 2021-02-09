@@ -6,7 +6,7 @@
 #include<cstring>
 #include<cctype>
 
-namespace __vic { namespace ASN1 {
+namespace __vic { namespace asn1 {
 
 //----------------------------------------------------------------------------
 inline bool find_in(char ch, const char *palette)

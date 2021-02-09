@@ -10,17 +10,16 @@
 #include<__vic/asn1/impl/basic_serializer.h>
 #include<__vic/asn1/impl/der_pc_traits.h>
 
-namespace __vic { namespace ASN1 {
+namespace __vic { namespace asn1 { namespace der {
 
 //////////////////////////////////////////////////////////////////////////////
 template<class StreamWriter>
-class DERSerializer : private BasicSerializer<StreamWriter>
+class serializer : private ber::basic_serializer<StreamWriter>
 {
-    typedef BasicSerializer<StreamWriter> base;
+    typedef ber::basic_serializer<StreamWriter> base;
 
     template<class T>
-    static size_t value_length(const T &v)
-        { return impl::der_encoded_length(v); }
+    static size_t value_length(const T &v) { return der::encoded_length(v); }
 
     using base::write_type;
     using base::write_constructed_type;
@@ -42,7 +41,7 @@ class DERSerializer : private BasicSerializer<StreamWriter>
         { for(const auto &el : seq) serialize(el); }
 public:
     template<class... Args>
-    explicit DERSerializer(Args&&... args)
+    explicit serializer(Args&&... args)
         : base(std::forward<Args>(args)...) {}
 
     using typename base::stream_writer_type;
@@ -72,16 +71,16 @@ public:
 //----------------------------------------------------------------------------
 template<class SW>
 template<tag_number_t Tag, class T, tag_class_t Cls>
-void DERSerializer<SW>::serialize(const IMPLICIT<Tag,T,Cls> &v)
+void serializer<SW>::serialize(const IMPLICIT<Tag,T,Cls> &v)
 {
-    write_type(v.tag(), impl::der_constructness<T>());
+    write_type(v.tag(), der::constructness<T>());
     write_length(value_length(v));
     serialize_value(v);
 }
 //----------------------------------------------------------------------------
 template<class SW>
 template<tag_number_t Tag, class T, tag_class_t Cls>
-void DERSerializer<SW>::serialize(const EXPLICIT<Tag,T,Cls> &v)
+void serializer<SW>::serialize(const EXPLICIT<Tag,T,Cls> &v)
 {
     write_constructed_type(v.tag());
     write_length(value_length(v));
@@ -90,7 +89,7 @@ void DERSerializer<SW>::serialize(const EXPLICIT<Tag,T,Cls> &v)
 //----------------------------------------------------------------------------
 template<class SW>
 template<class... Elems>
-void DERSerializer<SW>::serialize(const SEQUENCE<Elems...> &v)
+void serializer<SW>::serialize(const SEQUENCE<Elems...> &v)
 {
     write_constructed_type_short(v.tag());
     write_length(value_length(v));
@@ -99,7 +98,7 @@ void DERSerializer<SW>::serialize(const SEQUENCE<Elems...> &v)
 //----------------------------------------------------------------------------
 template<class SW>
 template<class T, template<class,class> class SeqCont>
-void DERSerializer<SW>::serialize(const SEQUENCE_OF<T,SeqCont> &v)
+void serializer<SW>::serialize(const SEQUENCE_OF<T,SeqCont> &v)
 {
     write_constructed_type_short(v.tag());
     write_length(value_length(v));
@@ -108,19 +107,19 @@ void DERSerializer<SW>::serialize(const SEQUENCE_OF<T,SeqCont> &v)
 //----------------------------------------------------------------------------
 template<class SW>
 template<class... Opts>
-void DERSerializer<SW>::serialize(const CHOICE<Opts...> &ch)
+void serializer<SW>::serialize(const CHOICE<Opts...> &ch)
 {
     this->serialize_choice(*this, ch);
 }
 //----------------------------------------------------------------------------
 template<class SW>
 template<class OID, class... Opts>
-void DERSerializer<SW>::serialize(const CLASS_CHOICE<OID,Opts...> &c)
+void serializer<SW>::serialize(const CLASS_CHOICE<OID,Opts...> &c)
 {
     this->serialize_class(*this, c);
 }
 //----------------------------------------------------------------------------
 
-}} // namespace
+}}} // namespace
 
 #endif // header guard

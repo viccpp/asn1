@@ -9,15 +9,15 @@
 #include<__vic/asn1/impl/basic_deserializer.h>
 #include<type_traits>
 
-namespace __vic { namespace ASN1 {
+namespace __vic { namespace asn1 { namespace ber {
 
 //////////////////////////////////////////////////////////////////////////////
 template<class StreamReader>
-class BERDeserializer : public BasicDeserializer<StreamReader>
+class deserializer : public ber::basic_deserializer<StreamReader>
 {
-    typedef BasicDeserializer<StreamReader> base;
+    typedef ber::basic_deserializer<StreamReader> base;
     typedef primitive_constructed pc_t;
-    friend DeserializerBase; // for DeserializerBase::choose_option(), etc.
+    friend ber::deserializer_base; // for deserializer_base::choose_option(), etc.
 
     using base::read_type;
     using base::read_length;
@@ -116,7 +116,7 @@ class BERDeserializer : public BasicDeserializer<StreamReader>
     void deserialize_str(CHARACTER_STRING & , type_tag_t );
 public:
     template<class... Args>
-    explicit BERDeserializer(Args&&... args)
+    explicit deserializer(Args&&... args)
         : base(std::forward<Args>(args)...) {}
 
     using typename base::stream_reader_type;
@@ -162,7 +162,7 @@ public:
 //----------------------------------------------------------------------------
 template<class SR>
 template<class Str>
-void BERDeserializer<SR>::deserialize_segments(Str &v, pc_t p_c)
+void deserializer<SR>::deserialize_segments(Str &v, pc_t p_c)
 {
     if(is_primitive(p_c)) // straightforward case - single segment
         append_value_bytes(v, read_definite_length());
@@ -178,7 +178,7 @@ void BERDeserializer<SR>::deserialize_segments(Str &v, pc_t p_c)
 //----------------------------------------------------------------------------
 template<class SR>
 template<class Str>
-void BERDeserializer<SR>::deserialize_segments_definite(Str &v, size_t len_all)
+void deserializer<SR>::deserialize_segments_definite(Str &v, size_t len_all)
 {
     push_limit(len_all);
     // which tag must we use in case of IMPLICIT tag??
@@ -189,7 +189,7 @@ void BERDeserializer<SR>::deserialize_segments_definite(Str &v, size_t len_all)
 //----------------------------------------------------------------------------
 template<class SR>
 template<class Str>
-void BERDeserializer<SR>::deserialize_segments_indefinite(Str &v)
+void deserializer<SR>::deserialize_segments_indefinite(Str &v)
 {
     type_field_t t;
     while(read_type_or_eoc(t))
@@ -201,7 +201,7 @@ void BERDeserializer<SR>::deserialize_segments_indefinite(Str &v)
 //----------------------------------------------------------------------------
 template<class SR>
 template<tag_number_t Tag, class T, tag_class_t Cls>
-void BERDeserializer<SR>::deserialize_lv(EXPLICIT<Tag,T,Cls> &v, pc_t p_c)
+void deserializer<SR>::deserialize_lv(EXPLICIT<Tag,T,Cls> &v, pc_t p_c)
 {
     check_constructed(p_c);
     size_t len;
@@ -219,7 +219,7 @@ void BERDeserializer<SR>::deserialize_lv(EXPLICIT<Tag,T,Cls> &v, pc_t p_c)
 }
 //----------------------------------------------------------------------------
 template<class SR>
-void BERDeserializer<SR>::deserialize_str(CHARACTER_STRING &v, type_tag_t tag)
+void deserializer<SR>::deserialize_str(CHARACTER_STRING &v, type_tag_t tag)
 {
     try
     {
@@ -232,7 +232,7 @@ void BERDeserializer<SR>::deserialize_str(CHARACTER_STRING &v, type_tag_t tag)
 }
 //----------------------------------------------------------------------------
 template<class SR>
-void BERDeserializer<SR>::deserialize(OCTET_STRING &v)
+void deserializer<SR>::deserialize(OCTET_STRING &v)
 {
     try
     {
@@ -245,7 +245,7 @@ void BERDeserializer<SR>::deserialize(OCTET_STRING &v)
 }
 //----------------------------------------------------------------------------
 template<class SR>
-void BERDeserializer<SR>::deserialize(BOOLEAN &v)
+void deserializer<SR>::deserialize(BOOLEAN &v)
 {
     try
     {
@@ -259,7 +259,7 @@ void BERDeserializer<SR>::deserialize(BOOLEAN &v)
 //----------------------------------------------------------------------------
 template<class SR>
 template<tag_number_t Tag, class T, tag_class_t Cls>
-void BERDeserializer<SR>::deserialize(IMPLICIT<Tag,T,Cls> &v)
+void deserializer<SR>::deserialize(IMPLICIT<Tag,T,Cls> &v)
 {
     try
     {
@@ -273,7 +273,7 @@ void BERDeserializer<SR>::deserialize(IMPLICIT<Tag,T,Cls> &v)
 //----------------------------------------------------------------------------
 template<class SR>
 template<tag_number_t Tag, class T, tag_class_t Cls>
-void BERDeserializer<SR>::deserialize(EXPLICIT<Tag,T,Cls> &v)
+void deserializer<SR>::deserialize(EXPLICIT<Tag,T,Cls> &v)
 {
     try
     {
@@ -287,7 +287,7 @@ void BERDeserializer<SR>::deserialize(EXPLICIT<Tag,T,Cls> &v)
 //----------------------------------------------------------------------------
 template<class SR>
 template<class... Elems>
-void BERDeserializer<SR>::deserialize(SEQUENCE<Elems...> &v)
+void deserializer<SR>::deserialize(SEQUENCE<Elems...> &v)
 {
     try
     {
@@ -301,7 +301,7 @@ void BERDeserializer<SR>::deserialize(SEQUENCE<Elems...> &v)
 //----------------------------------------------------------------------------
 template<class SR>
 template<class T, template<class,class> class SeqCont>
-void BERDeserializer<SR>::deserialize(SEQUENCE_OF<T,SeqCont> &v)
+void deserializer<SR>::deserialize(SEQUENCE_OF<T,SeqCont> &v)
 {
     try
     {
@@ -315,7 +315,7 @@ void BERDeserializer<SR>::deserialize(SEQUENCE_OF<T,SeqCont> &v)
 //----------------------------------------------------------------------------
 template<class SR>
 template<class... Opts>
-void BERDeserializer<SR>::deserialize(CHOICE<Opts...> &ch)
+void deserializer<SR>::deserialize(CHOICE<Opts...> &ch)
 {
     try
     {
@@ -329,7 +329,7 @@ void BERDeserializer<SR>::deserialize(CHOICE<Opts...> &ch)
 //----------------------------------------------------------------------------
 template<class SR>
 template<class OID, class... Opts>
-void BERDeserializer<SR>::deserialize(CLASS_CHOICE<OID,Opts...> &c)
+void deserializer<SR>::deserialize(CLASS_CHOICE<OID,Opts...> &c)
 {
     try
     {
@@ -342,6 +342,6 @@ void BERDeserializer<SR>::deserialize(CLASS_CHOICE<OID,Opts...> &c)
 }
 //----------------------------------------------------------------------------
 
-}} // namespace
+}}} // namespace
 
 #endif // header guard
