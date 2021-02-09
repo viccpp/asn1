@@ -19,6 +19,9 @@ using std::size_t;
 typedef unsigned tag_number_t;
 //////////////////////////////////////////////////////////////////////////////
 enum tag_class_t
+#if __cplusplus >= 201103L // C++11
+    : unsigned char
+#endif
 {
     universal        = 0, // 0 0
     application      = 1, // 0 1
@@ -26,6 +29,9 @@ enum tag_class_t
     private_         = 3  // 1 1
 };
 enum primitive_constructed
+#if __cplusplus >= 201103L // C++11
+    : unsigned char
+#endif
 {
     primitive   = 0,
     constructed = 1
@@ -33,14 +39,14 @@ enum primitive_constructed
 //////////////////////////////////////////////////////////////////////////////
 class type_tag_t
 {
-    tag_class_t cls_;
     tag_number_t num_;
+    tag_class_t cls_;
 public:
     type_tag_t() __VIC_DEFAULT_CTR
     __VIC_CONSTEXPR_FUNC type_tag_t(tag_number_t t, tag_class_t cls)
-        : cls_(cls) , num_(t) {}
+        : num_(t), cls_(cls) {}
     __VIC_CONSTEXPR_FUNC type_tag_t(tag_class_t cls, tag_number_t t)
-        : cls_(cls), num_(t) {}
+        : num_(t), cls_(cls) {}
 
     __VIC_CONSTEXPR_FUNC tag_number_t number() const { return num_; }
     __VIC_CONSTEXPR_FUNC tag_class_t class_() const { return cls_; }
@@ -51,29 +57,30 @@ public:
 //////////////////////////////////////////////////////////////////////////////
 class type_field_t
 {
-    type_tag_t tag_;
+    tag_number_t num_;
+    tag_class_t cls_;
     primitive_constructed p_c_;
 public:
     type_field_t() __VIC_DEFAULT_CTR
     __VIC_CONSTEXPR_FUNC type_field_t(type_tag_t t, primitive_constructed pc)
-        : tag_(t), p_c_(pc) {}
+        : num_(t.number()), cls_(t.class_()), p_c_(pc) {}
     __VIC_CONSTEXPR_FUNC type_field_t(
             tag_number_t t, tag_class_t cls, primitive_constructed pc)
-        : tag_(t, cls), p_c_(pc) {}
+        : num_(t), cls_(cls), p_c_(pc) {}
     __VIC_CONSTEXPR_FUNC type_field_t(
             tag_class_t cls, tag_number_t t, primitive_constructed pc)
-        : tag_(t, cls), p_c_(pc) {}
+        : num_(t), cls_(cls), p_c_(pc) {}
 
-    __VIC_CONSTEXPR_FUNC type_tag_t tag() const { return tag_; }
-    __VIC_CONSTEXPR_FUNC tag_number_t tag_number() const { return tag_.number(); }
-    __VIC_CONSTEXPR_FUNC tag_class_t tag_class() const { return tag_.class_(); }
+    __VIC_CONSTEXPR_FUNC type_tag_t tag() const { return type_tag_t(num_, cls_); }
+    __VIC_CONSTEXPR_FUNC tag_number_t tag_number() const { return num_; }
+    __VIC_CONSTEXPR_FUNC tag_class_t tag_class() const { return cls_; }
 
     __VIC_CONSTEXPR_FUNC primitive_constructed p_c() const { return p_c_; }
     __VIC_CONSTEXPR_FUNC bool is_primitive() const { return p_c_ == primitive; }
     __VIC_CONSTEXPR_FUNC bool is_constructed() const { return p_c_ == constructed; }
 
-    tag_number_t &tag_number_ref() { return tag_.number_ref(); }
-    tag_class_t &tag_class_ref() { return tag_.class_ref(); }
+    tag_number_t &tag_number_ref() { return num_; }
+    tag_class_t &tag_class_ref() { return cls_; }
     primitive_constructed &p_c_ref() { return p_c_; }
 };
 //////////////////////////////////////////////////////////////////////////////
@@ -91,7 +98,7 @@ extern const char * const tag_class_names[4];
 //----------------------------------------------------------------------------
 __VIC_CONSTEXPR_FUNC bool operator==(type_tag_t t1, type_tag_t t2)
 {
-    return t1.class_() == t2.class_() && t1.number() == t2.number();
+    return t1.number() == t2.number() && t1.class_() == t2.class_();
 }
 //----------------------------------------------------------------------------
 __VIC_CONSTEXPR_FUNC bool operator!=(type_tag_t t1, type_tag_t t2)
