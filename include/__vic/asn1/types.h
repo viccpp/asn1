@@ -10,7 +10,7 @@
 #error ISO C++11 compiler required
 #endif
 
-#include<__vic/asn1/ber.h>
+#include<__vic/asn1/defs.h>
 #include<__vic/asn1/impl/choose_type.h>
 #include<__vic/error.h>
 #include<__vic/type_traits.h>
@@ -29,14 +29,11 @@
 namespace __vic { namespace ASN1 {
 
 using std::size_t;
-using BER::type_tag_t;
-using BER::tag_class_t;
-using BER::tag_number_t;
 
 // For tagged types
-//constexpr auto UNIVERSAL = BER::universal; // not useful
-constexpr auto APPLICATION = BER::application;
-constexpr auto PRIVATE = BER::private_;
+//constexpr auto UNIVERSAL = universal; // not useful
+constexpr auto APPLICATION = application;
+constexpr auto PRIVATE = private_;
 
 #define FORWARD_BASE_OPS(T, base) \
     T() = default; \
@@ -90,7 +87,7 @@ public:
 //////////////////////////////////////////////////////////////////////////////
 struct OCTET_STRING : public raw
 {
-    static constexpr type_tag_t tag() { return {BER::universal, 4}; }
+    static constexpr type_tag_t tag() { return {universal, 4}; }
 
     OCTET_STRING() = default;
     OCTET_STRING(const void *data, size_t len) : raw(data, len) {}
@@ -115,7 +112,7 @@ struct OCTET_STRING : public raw
 class CHARACTER_STRING : public std::string
 {
 public:
-    static constexpr type_tag_t tag() { return {BER::universal, 29}; }
+    static constexpr type_tag_t tag() { return {universal, 29}; }
     FORWARD_BASE_OPS(CHARACTER_STRING, std::string)
     const char *bytes() const { return this->data(); }
     // inherited or redefined by descendants
@@ -132,21 +129,21 @@ public:
 //////////////////////////////////////////////////////////////////////////////
 struct PrintableString : public RestrictedCharacterStringType
 {
-    static constexpr type_tag_t tag() { return {BER::universal, 19}; }
+    static constexpr type_tag_t tag() { return {universal, 19}; }
     FORWARD_BASE_OPS(PrintableString, RestrictedCharacterStringType)
     bool is_valid() const;
 };
 //////////////////////////////////////////////////////////////////////////////
 struct GraphicString : public RestrictedCharacterStringType
 {
-    static constexpr type_tag_t tag() { return {BER::universal, 25}; }
+    static constexpr type_tag_t tag() { return {universal, 25}; }
     FORWARD_BASE_OPS(GraphicString, RestrictedCharacterStringType)
     bool is_valid() const;
 };
 //////////////////////////////////////////////////////////////////////////////
 struct VisibleString : public RestrictedCharacterStringType
 {
-    static constexpr type_tag_t tag() { return {BER::universal, 26}; }
+    static constexpr type_tag_t tag() { return {universal, 26}; }
     FORWARD_BASE_OPS(VisibleString, RestrictedCharacterStringType)
     bool is_valid() const;
 };
@@ -154,14 +151,14 @@ using ISO646String = VisibleString;
 //////////////////////////////////////////////////////////////////////////////
 struct NumericString : public RestrictedCharacterStringType
 {
-    static constexpr type_tag_t tag() { return {BER::universal, 18}; }
+    static constexpr type_tag_t tag() { return {universal, 18}; }
     FORWARD_BASE_OPS(NumericString, RestrictedCharacterStringType)
     bool is_valid() const;
 };
 //////////////////////////////////////////////////////////////////////////////
 struct UTF8String : public RestrictedCharacterStringType
 {
-    static constexpr type_tag_t tag() { return {BER::universal, 12}; }
+    static constexpr type_tag_t tag() { return {universal, 12}; }
     FORWARD_BASE_OPS(UTF8String, RestrictedCharacterStringType)
     bool is_valid() const;
     size_t length_chars() const;
@@ -169,19 +166,19 @@ struct UTF8String : public RestrictedCharacterStringType
 //////////////////////////////////////////////////////////////////////////////
 struct ObjectDescriptor : public GraphicString
 {
-    static constexpr type_tag_t tag() { return {BER::universal, 7}; }
+    static constexpr type_tag_t tag() { return {universal, 7}; }
     FORWARD_BASE_OPS(ObjectDescriptor, GraphicString)
 };
 //////////////////////////////////////////////////////////////////////////////
 struct UTCTime : public VisibleString
 {
-    static constexpr type_tag_t tag() { return {BER::universal, 23}; }
+    static constexpr type_tag_t tag() { return {universal, 23}; }
     FORWARD_BASE_OPS(UTCTime, VisibleString)
 };
 //////////////////////////////////////////////////////////////////////////////
 struct GeneralizedTime : public VisibleString
 {
-    static constexpr type_tag_t tag() { return {BER::universal, 24}; }
+    static constexpr type_tag_t tag() { return {universal, 24}; }
     FORWARD_BASE_OPS(GeneralizedTime, VisibleString)
 };
 //////////////////////////////////////////////////////////////////////////////
@@ -191,7 +188,7 @@ class integer
     Int val;
 public:
     using int_type = Int;
-    static constexpr type_tag_t tag() { return {BER::universal, 2}; }
+    static constexpr type_tag_t tag() { return {universal, 2}; }
 
     integer() = default;
     constexpr integer(Int n) : val{n} {}
@@ -241,7 +238,7 @@ public:
     using enum_type = Enum;
     using int_type = typename std::underlying_type<Enum>::type;
 
-    static constexpr type_tag_t tag() { return {BER::universal, 10}; }
+    static constexpr type_tag_t tag() { return {universal, 10}; }
 
     ENUMERATED() = default;
     constexpr ENUMERATED(Enum v) : val{v} {}
@@ -258,7 +255,7 @@ class BOOLEAN
 {
     bool val;
 public:
-    static constexpr type_tag_t tag() { return {BER::universal, 1}; }
+    static constexpr type_tag_t tag() { return {universal, 1}; }
 
     BOOLEAN() = default;
     constexpr BOOLEAN(bool v) : val{v} {}
@@ -274,7 +271,7 @@ class REAL
     Real val;
 public:
     using real_type = Real;
-    static constexpr type_tag_t tag() { return {BER::universal, 9}; }
+    static constexpr type_tag_t tag() { return {universal, 9}; }
 
     REAL() = default;
     constexpr REAL(Real n) : val{n} {}
@@ -291,7 +288,7 @@ public:
 //////////////////////////////////////////////////////////////////////////////
 struct NULL_
 {
-    static constexpr type_tag_t tag() { return {BER::universal, 5}; }
+    static constexpr type_tag_t tag() { return {universal, 5}; }
 };
 //////////////////////////////////////////////////////////////////////////////
 
@@ -301,7 +298,7 @@ struct NULL_
 template<>
 struct integer<raw> : public raw
 {
-    static constexpr type_tag_t tag() { return {BER::universal, 2}; }
+    static constexpr type_tag_t tag() { return {universal, 2}; }
     raw &as_raw() { return *this; }
     const raw &as_raw() const { return *this; }
 };
@@ -309,7 +306,7 @@ struct integer<raw> : public raw
 template<>
 struct REAL<raw> : public raw
 {
-    static constexpr type_tag_t tag() { return {BER::universal, 9}; }
+    static constexpr type_tag_t tag() { return {universal, 9}; }
     raw &as_raw() { return *this; }
     const raw &as_raw() const { return *this; }
 };
@@ -342,7 +339,7 @@ inline ENUMERATED<Enum> &ENUMERATED<Enum>::assign(int_type v)
 
 //////////////////////////////////////////////////////////////////////////////
 // Implicitly tagged type e.g. [APPLICATION 1] IMPLICIT
-template<tag_number_t Tag, class T, tag_class_t Cls = BER::context_specific>
+template<tag_number_t Tag, class T, tag_class_t Cls = context_specific>
 class IMPLICIT : public T
 {
 public:
@@ -356,7 +353,7 @@ public:
 };
 //////////////////////////////////////////////////////////////////////////////
 // Explicitly tagged type e.g. [APPLICATION 1] EXPLICIT
-template<tag_number_t Tag, class T, tag_class_t Cls = BER::context_specific>
+template<tag_number_t Tag, class T, tag_class_t Cls = context_specific>
 class EXPLICIT : public T
 {
 public:
@@ -485,7 +482,7 @@ protected:
     using self_type = SEQUENCE<Elems...>;
 public:
     using elements_type = sequence_elements<Elems...>;
-    static constexpr type_tag_t tag() { return {BER::universal, 16}; }
+    static constexpr type_tag_t tag() { return {universal, 16}; }
     static constexpr unsigned size() { return sizeof...(Elems); }
 
     SEQUENCE();
@@ -552,7 +549,7 @@ class SEQUENCE_OF : public SeqCont<T>
 {
 public:
     using container_type = SeqCont<T>;
-    static constexpr type_tag_t tag() { return {BER::universal, 16}; }
+    static constexpr type_tag_t tag() { return {universal, 16}; }
 
     //using container_type::container_type;
     SEQUENCE_OF() = default;

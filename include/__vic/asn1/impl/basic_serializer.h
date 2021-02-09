@@ -73,16 +73,16 @@ protected:
     explicit BasicSerializer(Args&&... args)
         : wr(std::forward<Args>(args)...) {}
 
-    void write_type(type_tag_t tag, BER::primitive_constructed p_c)
+    void write_type(type_tag_t tag, primitive_constructed p_c)
         { wr.write_type(tag, p_c); }
     void write_primitive_type(type_tag_t tag)
-        { write_type(tag, BER::primitive); }
+        { write_type(tag, primitive); }
     void write_constructed_type(type_tag_t tag)
-        { write_type(tag, BER::constructed); }
+        { write_type(tag, constructed); }
     void write_primitive_type_short(type_tag_t tag)
-        { wr.write_type_short(tag, BER::primitive); }
+        { wr.write_type_short(tag, primitive); }
     void write_constructed_type_short(type_tag_t tag)
-        { wr.write_type_short(tag, BER::constructed); }
+        { wr.write_type_short(tag, constructed); }
     void write_length(size_t len) { wr.write_length(len); }
     void write_length_short(size_t len) { wr.write_length_short(len); }
     template<class Str>

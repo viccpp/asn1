@@ -3,10 +3,10 @@
 //
 
 #include<__vic/defs.h>
-#include<__vic/asn1/ber.h>
+#include<__vic/asn1/defs.h>
 #include<cstdio> // for std::snprintf()
 
-namespace __vic { namespace ASN1 { namespace BER {
+namespace __vic { namespace ASN1 {
 
 namespace {
 const char * const universal_types_names[] =
@@ -77,4 +77,4 @@ void to_text(type_tag_t t, std::string &res)
 }
 //----------------------------------------------------------------------------
 
-}}} // namespace
+}} // namespace

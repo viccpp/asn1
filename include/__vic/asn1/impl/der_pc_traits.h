@@ -14,27 +14,27 @@ namespace __vic { namespace ASN1 { namespace impl {
 
 //----------------------------------------------------------------------------
 template<class... Args>
-constexpr BER::primitive_constructed der_constructness(const SEQUENCE<Args...> * )
-{ return BER::constructed; }
+constexpr primitive_constructed der_constructness(const SEQUENCE<Args...> * )
+{ return constructed; }
 //----------------------------------------------------------------------------
 template<class T>
-constexpr BER::primitive_constructed der_constructness(const SEQUENCE_OF<T> * )
-{ return BER::constructed; }
+constexpr primitive_constructed der_constructness(const SEQUENCE_OF<T> * )
+{ return constructed; }
 //----------------------------------------------------------------------------
 template<tag_number_t Tag, class T, tag_class_t Cls>
-constexpr BER::primitive_constructed der_constructness(const EXPLICIT<Tag,T,Cls> * )
-{ return BER::constructed; }
+constexpr primitive_constructed der_constructness(const EXPLICIT<Tag,T,Cls> * )
+{ return constructed; }
 //----------------------------------------------------------------------------
 template<tag_number_t Tag, class T, tag_class_t Cls>
-constexpr BER::primitive_constructed der_constructness(const IMPLICIT<Tag,T,Cls> * )
+constexpr primitive_constructed der_constructness(const IMPLICIT<Tag,T,Cls> * )
 { return der_constructness(static_cast<const T *>(nullptr)); }
 //----------------------------------------------------------------------------
-constexpr BER::primitive_constructed der_constructness(const void * )
-{ return BER::primitive; }
+constexpr primitive_constructed der_constructness(const void * )
+{ return primitive; }
 //----------------------------------------------------------------------------
 
 //----------------------------------------------------------------------------
-template<class T> constexpr BER::primitive_constructed der_constructness()
+template<class T> constexpr primitive_constructed der_constructness()
 {
     return der_constructness(static_cast<const T *>(nullptr));
 }
@@ -42,10 +42,10 @@ template<class T> constexpr BER::primitive_constructed der_constructness()
 
 //----------------------------------------------------------------------------
 template<class T> constexpr bool is_der_primitive()
-{ return BER::is_primitive(der_constructness<T>()); }
+{ return is_primitive(der_constructness<T>()); }
 //----------------------------------------------------------------------------
 template<class T> constexpr bool is_der_constructed()
-{ return BER::is_constructed(der_constructness<T>()); }
+{ return is_constructed(der_constructness<T>()); }
 //----------------------------------------------------------------------------
 
 }}} // namespace

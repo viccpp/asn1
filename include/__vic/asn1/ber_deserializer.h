@@ -16,8 +16,7 @@ template<class StreamReader>
 class BERDeserializer : public BasicDeserializer<StreamReader>
 {
     typedef BasicDeserializer<StreamReader> base;
-    typedef BER::type_field_t type_field_t;
-    typedef BER::primitive_constructed pc_t;
+    typedef primitive_constructed pc_t;
     friend DeserializerBase; // for DeserializerBase::choose_option(), etc.
 
     using base::read_type;

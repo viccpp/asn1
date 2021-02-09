@@ -2,11 +2,11 @@
 // $Id$
 //
 
-#include<__vic/asn1/ber.h>
+#include<__vic/asn1/defs.h>
 
-namespace __vic { namespace ASN1 { namespace BER {
+namespace __vic { namespace ASN1 {
 
-const char * const impl::tag_class_names[4] =
+extern const char * const tag_class_names[4] =
     { "UNIVERSAL", "APPLICATION", "CONTEXT-SPECIFIC", "PRIVATE" };
 
-}}} // namespace
+}} // namespace

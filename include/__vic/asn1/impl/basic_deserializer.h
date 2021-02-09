@@ -26,8 +26,7 @@ struct DeserializerBase
 protected:
     template<class...> struct always_false : std::false_type {};
 
-    typedef BER::type_field_t type_field_t;
-    typedef BER::primitive_constructed pc_t;
+    typedef primitive_constructed pc_t;
 
     static void check_type(type_tag_t , type_tag_t );
     static void check_constructness(pc_t , pc_t );
@@ -321,15 +320,15 @@ inline void DeserializerBase::check_constructness(pc_t p_c, pc_t expected)
 //----------------------------------------------------------------------------
 inline void DeserializerBase::check_primitive(pc_t p_c)
 {
-    //check_constructness(p_c, BER::primitive);
-    if(p_c != BER::primitive)
+    //check_constructness(p_c, primitive);
+    if(p_c != primitive)
         throw bad_format("Only primitive encoding permitted");
 }
 //----------------------------------------------------------------------------
 inline void DeserializerBase::check_constructed(pc_t p_c)
 {
-    //check_constructness(p_c, BER::constructed);
-    if(p_c != BER::constructed)
+    //check_constructness(p_c, constructed);
+    if(p_c != constructed)
         throw bad_format("Only constructed encoding permitted");
 }
 //----------------------------------------------------------------------------

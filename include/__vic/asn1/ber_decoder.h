@@ -403,15 +403,6 @@ bool Decoder<SR>::read_type_raw_or_eoc(TUInt &t)
 }
 //----------------------------------------------------------------------------
 
-#if __cplusplus >= 201103L // C++11
-//----------------------------------------------------------------------------
-inline __vic::string_buffer &operator<<(__vic::string_buffer &s, type_tag_t t)
-    { to_text(t, s); return s; }
-inline __vic::string_buffer &&operator<<(__vic::string_buffer &&s, type_tag_t t)
-    { to_text(t, s); return std::move(s); }
-//----------------------------------------------------------------------------
-#endif
-
 }}} // namespace
 
 #endif // header guard
