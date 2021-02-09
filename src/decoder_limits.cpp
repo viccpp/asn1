@@ -2,7 +2,7 @@
 // $Id$
 //
 
-#include<__vic/asn1/ber_decoder.h>
+#include<__vic/asn1/ber/decoder.h>
 
 namespace __vic { namespace asn1 { namespace ber {
 

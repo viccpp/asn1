@@ -3,12 +3,11 @@
 // Platform: ISO C++ 11
 // $Id$
 
-#ifndef __VIC_ASN1_IMPL_DER_PC_TRAITS_H
-#define __VIC_ASN1_IMPL_DER_PC_TRAITS_H
+#ifndef __VIC_ASN1_DER_IMPL_PC_TRAITS_H
+#define __VIC_ASN1_DER_IMPL_PC_TRAITS_H
 
-#include<__vic/asn1/ber.h>
+#include<__vic/asn1/ber/defs.h>
 #include<__vic/asn1/types.h>
-#include<type_traits>
 
 namespace __vic { namespace asn1 { namespace der {
 

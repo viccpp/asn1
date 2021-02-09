@@ -3,13 +3,13 @@
 // Platform: ISO C++ 11
 // $Id$
 
-#ifndef __VIC_ASN1_IMPL_BASIC_DESERIALIZER_H
-#define __VIC_ASN1_IMPL_BASIC_DESERIALIZER_H
+#ifndef __VIC_ASN1_BER_IMPL_BASIC_DESERIALIZER_H
+#define __VIC_ASN1_BER_IMPL_BASIC_DESERIALIZER_H
 
 #include<__vic/bits.h>
 #include<__vic/error.h>
 #include<__vic/string_buffer.h>
-#include<__vic/asn1/ber_decoder.h>
+#include<__vic/asn1/ber/decoder.h>
 #include<__vic/asn1/types.h>
 #include<type_traits>
 #include<algorithm>

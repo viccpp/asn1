@@ -3,10 +3,10 @@
 // Platform: ISO C++ 11
 // $Id$
 
-#ifndef __VIC_ASN1_IMPL_BASIC_SERIALIZER_H
-#define __VIC_ASN1_IMPL_BASIC_SERIALIZER_H
+#ifndef __VIC_ASN1_BER_IMPL_BASIC_SERIALIZER_H
+#define __VIC_ASN1_BER_IMPL_BASIC_SERIALIZER_H
 
-#include<__vic/asn1/ber_coder.h>
+#include<__vic/asn1/ber/encoder.h>
 #include<__vic/asn1/types.h>
 #include<type_traits>
 

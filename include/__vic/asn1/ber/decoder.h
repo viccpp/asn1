@@ -6,11 +6,12 @@
 #ifndef __VIC_ASN1_BER_DECODER_H
 #define __VIC_ASN1_BER_DECODER_H
 
-#include<__vic/asn1/ber.h>
+#include<__vic/asn1/ber/defs.h>
 #include<__vic/string_buffer.h>
 #include<__vic/error.h>
 #include<algorithm>
 #include<vector>
+#include<cassert>
 
 namespace __vic { namespace asn1 { namespace ber {
 

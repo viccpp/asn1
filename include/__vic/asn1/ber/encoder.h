@@ -3,10 +3,11 @@
 // Platform: ISO C++ 98 / 11
 // $Id$
 
-#ifndef __VIC_ASN1_BER_CODER_H
-#define __VIC_ASN1_BER_CODER_H
+#ifndef __VIC_ASN1_BER_ENCODER_H
+#define __VIC_ASN1_BER_ENCODER_H
 
-#include<__vic/asn1/ber.h>
+#include<__vic/asn1/ber/defs.h>
+#include<cassert>
 
 namespace __vic { namespace asn1 { namespace ber {
 

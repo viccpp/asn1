@@ -1,15 +1,16 @@
-// ASN.1 BER deserializer
+// ASN.1 DER deserializer
 //
 // Platform: ISO C++ 11
 // $Id$
 
-#ifndef __VIC_ASN1_BER_DESERIALIZER_H
-#define __VIC_ASN1_BER_DESERIALIZER_H
+#ifndef __VIC_ASN1_DER_DESERIALIZER_H
+#define __VIC_ASN1_DER_DESERIALIZER_H
 
-#include<__vic/asn1/impl/basic_deserializer.h>
+#include<__vic/asn1/ber/impl/basic_deserializer.h>
+#include<__vic/ascii.h>
 #include<type_traits>
 
-namespace __vic { namespace asn1 { namespace ber {
+namespace __vic { namespace asn1 { namespace der {
 
 //////////////////////////////////////////////////////////////////////////////
 template<class StreamReader>
@@ -20,101 +21,62 @@ class deserializer : public ber::basic_deserializer<StreamReader>
     friend ber::deserializer_base; // for deserializer_base::choose_option(), etc.
 
     using base::read_type;
-    using base::read_length;
     using base::read_definite_length;
-    using base::append_value_bytes;
-    using base::read_type_or_eoc;
-    using base::skip_eoc_tlv;
     using base::have_more_bytes;
     using base::throw_cannot_read;
-    using base::check_type;
     using base::check_primitive;
     using base::check_constructed;
     using base::push_limit;
     using base::pop_limit;
+    using base::deserialize_raw_lv;
 
     // Deserialize length'n'value
     using base::deserialize_lv;
     void deserialize_lv(OCTET_STRING &v, pc_t p_c)
-        { v.clear(); deserialize_segments(v, p_c); }
+        { deserialize_raw_lv(v.as_raw(), p_c); }
     void deserialize_lv(CHARACTER_STRING &v, pc_t p_c)
-        { v.clear(); deserialize_segments(v, p_c); }
-
-    void deserialize_lv(BOOLEAN &v, pc_t p_c)
-    {
-        check_primitive(p_c);
-        v = this->read_boolean_value() != 0x00;
-    }
+        { deserialize_raw_lv(v, p_c); }
+    void deserialize_lv(BOOLEAN & , pc_t );
 
     template<tag_number_t Tag, class T, tag_class_t Cls>
     void deserialize_lv(IMPLICIT<Tag,T,Cls> &v, pc_t p_c)
         { deserialize_lv(v.unwrap(), p_c); }
     template<tag_number_t Tag, class T, tag_class_t Cls>
-    void deserialize_lv(EXPLICIT<Tag,T,Cls> & , pc_t );
+    void deserialize_lv(EXPLICIT<Tag,T,Cls> &v, pc_t p_c)
+    {
+        check_constructed(p_c);
+        push_limit(read_definite_length());
+        deserialize(v.unwrap());
+        pop_limit();
+        //!! deserialize_constructed([&]{ deserialize(v.get()); });
+    }
 
     template<class... Elems>
     void deserialize_lv(SEQUENCE<Elems...> &seq, pc_t p_c)
     {
         check_constructed(p_c);
-        size_t len;
-        if(read_length(len)) // definite
-        {
-            push_limit(len);
-            this->deserialize_seq_def(*this, seq);
-            pop_limit();
-        }
-        else // indefinite
-            this->deserialize_seq_indef(*this, seq);
+        push_limit(read_definite_length());
+        this->deserialize_seq_def(*this, seq);
+        pop_limit();
     }
     template<class T, template<class,class> class SeqCont>
     void deserialize_lv(SEQUENCE_OF<T,SeqCont> &seq, pc_t p_c)
     {
         check_constructed(p_c);
+        push_limit(read_definite_length());
         seq.clear();
-        size_t len;
-        if(read_length(len)) // definite
-        {
-            push_limit(len);
-            while(have_more_bytes()) deserialize(seq.push_default());
-            pop_limit();
-        }
-        else // indefinite
-        {
-            type_field_t t;
-            while(read_type_or_eoc(t))
-                deserialize_lv_or_choice(seq.push_default(), t);
-        }
-    }
-    template<class T>
-    void deserialize_lv_or_choice(T &v, const type_field_t &t)
-    {
-        // the last argument is used only for
-        // choosing an appropriate function
-        deserialize_lv_or_choice_helper(v, t, &v);
-    }
-    template<class T>
-    void deserialize_lv_or_choice_helper( // It isn't a CHOICE
-        T &v, const type_field_t &t, void * )
-    {
-        this->check_and_deserialize(*this, v, t);
-    }
-    template<class T, class... Opts>
-    void deserialize_lv_or_choice_helper( // It's a CHOICE
-        T &ch, const type_field_t &t, CHOICE<Opts...> * )
-    {
-        this->deserialize_choice_lv(*this, ch, t);
+        while(have_more_bytes()) deserialize(seq.push_default());
+        pop_limit();
     }
 
     template<class OID, class... Opts>
     void deserialize_lv(CLASS_CHOICE<OID,Opts...> &ch, pc_t pc)
         { this->deserialize_class_lv(*this, ch, pc); }
 
-    template<class Str> void deserialize_segments(Str & , pc_t );
-    template<class Str> void deserialize_segments_definite(Str & , size_t );
-    template<class Str> void deserialize_segments_indefinite(Str & );
-
     void deserialize_str(CHARACTER_STRING & , type_tag_t );
 public:
+    typedef typename base::bad_format bad_format;
+
     template<class... Args>
     explicit deserializer(Args&&... args)
         : base(std::forward<Args>(args)...) {}
@@ -161,60 +123,17 @@ public:
 //////////////////////////////////////////////////////////////////////////////
 //----------------------------------------------------------------------------
 template<class SR>
-template<class Str>
-void deserializer<SR>::deserialize_segments(Str &v, pc_t p_c)
+void deserializer<SR>::deserialize_lv(BOOLEAN &v, pc_t p_c)
 {
-    if(is_primitive(p_c)) // straightforward case - single segment
-        append_value_bytes(v, read_definite_length());
-    else // many segments
+    check_primitive(p_c);
+    uint8_t b = this->read_boolean_value();
+    switch(b)
     {
-        size_t len;
-        if(read_length(len))
-            deserialize_segments_definite(v, len);
-        else
-            deserialize_segments_indefinite(v);
-    }
-}
-//----------------------------------------------------------------------------
-template<class SR>
-template<class Str>
-void deserializer<SR>::deserialize_segments_definite(Str &v, size_t len_all)
-{
-    push_limit(len_all);
-    // which tag must we use in case of IMPLICIT tag??
-    while(have_more_bytes())
-        deserialize_segments(v, read_type(v.tag()));
-    pop_limit();
-}
-//----------------------------------------------------------------------------
-template<class SR>
-template<class Str>
-void deserializer<SR>::deserialize_segments_indefinite(Str &v)
-{
-    type_field_t t;
-    while(read_type_or_eoc(t))
-    {
-        check_type(t.tag(), v.tag()); // which tag if IMPLICIT??
-        deserialize_segments(v, t.p_c());
-    }
-}
-//----------------------------------------------------------------------------
-template<class SR>
-template<tag_number_t Tag, class T, tag_class_t Cls>
-void deserializer<SR>::deserialize_lv(EXPLICIT<Tag,T,Cls> &v, pc_t p_c)
-{
-    check_constructed(p_c);
-    size_t len;
-    if(read_length(len)) // definite
-    {
-        push_limit(len);
-        deserialize(v.unwrap());
-        pop_limit();
-    }
-    else // indefinite
-    {
-        deserialize(v.unwrap());
-        skip_eoc_tlv();
+        case 0x00: v = false; break;
+        case 0xFF: v = true;  break;
+        default: throw bad_format(__vic::msg(32) << "Invalid value: 0x" <<
+            __vic::ascii::toxdigit_upper(__vic::hi_nibble(b)) <<
+            __vic::ascii::toxdigit_upper(__vic::lo_nibble(b)));
     }
 }
 //----------------------------------------------------------------------------
@@ -263,7 +182,7 @@ void deserializer<SR>::deserialize(IMPLICIT<Tag,T,Cls> &v)
 {
     try
     {
-        deserialize_lv(v.unwrap(), read_type(v.tag()));
+        deserialize_lv(v, read_type(v.tag()));
     }
     catch(const std::exception &ex)
     {

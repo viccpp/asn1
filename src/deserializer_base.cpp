@@ -2,7 +2,7 @@
 // $Id$
 //
 
-#include<__vic/asn1/impl/basic_deserializer.h>
+#include<__vic/asn1/ber/impl/basic_deserializer.h>
 
 namespace __vic { namespace asn1 { namespace ber {
 
