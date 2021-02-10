@@ -811,7 +811,7 @@ private:
     {
         if(option_type<I>::tag() == tag)
             return std::forward<Func>(f)(set_default<I>());
-        else throw invalid_choice_tag{};
+        throw invalid_choice_tag{};
     }
     template<unsigned I, class Func>
     auto choose_and_apply(type_tag_t tag, Func &&f) ->
@@ -820,7 +820,7 @@ private:
     {
         if(option_type<I>::tag() == tag)
             return std::forward<Func>(f)(set_default<I>());
-        else return choose_and_apply<I+1>(tag, std::forward<Func>(f));
+        return choose_and_apply<I+1>(tag, std::forward<Func>(f));
     }
 protected:
     using self_type = CHOICE<Opts...>;
@@ -834,17 +834,6 @@ public:
     CHOICE &operator=(const CHOICE &o) { CHOICE(o).swap(*this); return *this; }
     CHOICE &operator=(CHOICE &&o) noexcept { swap(o); return *this; }
 
-    template<unsigned I> option_type<I> &get()
-    {
-        if(I != curr) throw invalid_choice_index{};
-        return get_unchecked<I>();
-    }
-    template<unsigned I> const option_type<I> &get() const
-    {
-        if(I != curr) throw invalid_choice_index{};
-        return get_unchecked<I>();
-    }
-
     template<unsigned I> option_type<I> &get_unchecked()
     {
         //static_assert(I < size(), "Invalid index");
@@ -855,6 +844,17 @@ public:
     {
         assert(is_set());
         return static_cast<const wrapped_option_type<I> &>(*p).unwrap();
+    }
+
+    template<unsigned I> option_type<I> &get()
+    {
+        if(I != curr) throw invalid_choice_index{};
+        return get_unchecked<I>();
+    }
+    template<unsigned I> const option_type<I> &get() const
+    {
+        if(I != curr) throw invalid_choice_index{};
+        return get_unchecked<I>();
     }
 
     template<unsigned I> void set(const option_type<I> &v)
@@ -985,7 +985,7 @@ private:
     {
         if(eq(d, wrapped_option_type<I>::id()))
             return std::forward<Func>(f)(set_default<I>());
-        else throw invalid_choice_tag{};
+        throw invalid_choice_tag{};
     }
     template<unsigned I, class Func>
     auto choose_and_apply(const char *d, Func &&f) ->
@@ -994,7 +994,7 @@ private:
     {
         if(eq(d, wrapped_option_type<I>::id()))
             return std::forward<Func>(f)(set_default<I>());
-        else return choose_and_apply<I+1>(d, std::forward<Func>(f));
+        return choose_and_apply<I+1>(d, std::forward<Func>(f));
     }
 protected:
     using self_type = CLASS_CHOICE<OID,Opts...>;
@@ -1010,17 +1010,6 @@ public:
     CLASS_CHOICE &operator=(CLASS_CHOICE &&o) noexcept
         { swap(o); return *this; }
 
-    template<unsigned I> option_type<I> &get()
-    {
-        if(I != curr) throw invalid_choice_index{};
-        return get_unchecked<I>();
-    }
-    template<unsigned I> const option_type<I> &get() const
-    {
-        if(I != curr) throw invalid_choice_index{};
-        return get_unchecked<I>();
-    }
-
     template<unsigned I> option_type<I> &get_unchecked()
     {
         assert(is_set());
@@ -1030,6 +1019,17 @@ public:
     {
         assert(is_set());
         return static_cast<const wrapped_option_type<I> &>(*p).unwrap();
+    }
+
+    template<unsigned I> option_type<I> &get()
+    {
+        if(I != curr) throw invalid_choice_index{};
+        return get_unchecked<I>();
+    }
+    template<unsigned I> const option_type<I> &get() const
+    {
+        if(I != curr) throw invalid_choice_index{};
+        return get_unchecked<I>();
     }
 
     // Applies generic function to current option
