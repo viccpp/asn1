@@ -1,19 +1,14 @@
 // ASN.1-types
 //
-// Platform: ISO C++ 11
+// Platform: ISO C++ 14
 // $Id$
 
 #ifndef __VIC_ASN1_TYPES_H
 #define __VIC_ASN1_TYPES_H
 
-#if __cplusplus < 201103L
-#error ISO C++11 compiler required
-#endif
-
 #include<__vic/asn1/defs.h>
 #include<__vic/asn1/impl/choose_type.h>
 #include<__vic/error.h>
-#include<__vic/type_traits.h>
 #include<initializer_list>
 #include<type_traits>
 #include<cstddef>
@@ -37,12 +32,8 @@ constexpr auto PRIVATE = private_;
 
 #define FORWARD_BASE_OPS(T, base) \
     T() = default; \
-    T(const T & ) = default; \
-    T(T && ) = default; \
     template<class... Args> \
     T(Args&&... args) : base(std::forward<Args>(args)...) {} \
-    T &operator=(const T & ) = default; \
-    T &operator=(T && ) = default; \
     template<class U> \
     T &operator=(U &&v) { base::operator=(std::forward<U>(v)); return *this; }
 
@@ -236,7 +227,7 @@ class ENUMERATED
     Enum val;
 public:
     using enum_type = Enum;
-    using int_type = typename std::underlying_type<Enum>::type;
+    using int_type = std::underlying_type_t<Enum>;
 
     static constexpr type_tag_t tag() { return {universal, 10}; }
 
@@ -318,8 +309,7 @@ struct REAL<raw> : public raw
 // I.e. function returns true if integer value can be safely casted to enum.
 // No checking is performed if no specialization done
 template<class Enum>
-inline bool is_enum_value(typename std::underlying_type<Enum>::type )
-{ return true; }
+inline bool is_enum_value(std::underlying_type_t<Enum> ) { return true; }
 //----------------------------------------------------------------------------
 
 //////////////////////////////////////////////////////////////////////////////
@@ -430,10 +420,9 @@ public:
     sequence_elements<> tail() const { return {}; }
 
     template<unsigned I>
-    typename std::enable_if<I == 0U, Head &>::type get() { return head(); }
+    std::enable_if_t<I == 0U, Head &> get() { return head(); }
     template<unsigned I>
-    typename std::enable_if<I == 0U, const Head &>::type get() const
-        { return head(); }
+    std::enable_if_t<I == 0U, const Head &> get() const { return head(); }
 
     template<class F> void for_each(F &&f) { std::forward<F>(f)(head()); }
     template<class F> void for_each(F &&f) const { std::forward<F>(f)(head()); }
@@ -451,19 +440,14 @@ public:
     const sequence_elements<Tail...> &tail() const { return tail_; }
 
     template<unsigned I>
-    typename std::enable_if<I == 0U, Head &>::type get() { return head(); }
+    std::enable_if_t<I == 0U, Head &> get() { return head(); }
     template<unsigned I>
-    typename std::enable_if<I == 0U, const Head &>::type get() const
-        { return head(); }
+    std::enable_if_t<I == 0U, const Head &> get() const { return head(); }
 
-    template<unsigned I>
-    typename std::enable_if<(0U < I && I <= sizeof...(Tail)),
-        choose_type<I, Head, Tail...>
-    >::type &get() { return tail().template get<I - 1U>(); }
-    template<unsigned I>
-    typename std::enable_if<(0U < I && I <= sizeof...(Tail)),
-        choose_type<I, Head, Tail...>
-    >::type const &get() const { return tail().template get<I - 1U>(); }
+    template<unsigned I, std::enable_if_t<(0U < I && I <= sizeof...(Tail)),int> = 0>
+    auto &get() { return tail().template get<I - 1U>(); }
+    template<unsigned I, std::enable_if_t<(0U < I && I <= sizeof...(Tail)),int> = 0>
+    const auto &get() const { return tail().template get<I - 1U>(); }
 
     template<class F> void for_each(F &&f)
         { std::forward<F>(f)(head()); tail().for_each(std::forward<F>(f)); }
@@ -496,11 +480,9 @@ public:
     SEQUENCE &operator=(const SEQUENCE & );
 
     template<unsigned I>
-    choose_type<I, Elems...> &get()
-        { return elems.template get<I>(); }
+    auto &get() { return elems.template get<I>(); }
     template<unsigned I>
-    const choose_type<I, Elems...> &get() const
-        { return elems.template get<I>(); }
+    const auto &get() const { return elems.template get<I>(); }
 
     elements_type &elements() { return elems; }
     const elements_type &elements() const { return elems; }
@@ -720,22 +702,20 @@ public:
 //////////////////////////////////////////////////////////////////////////////
 //----------------------------------------------------------------------------
 template<unsigned I, class Choice, class Func>
-auto choice_apply_thunk(Choice &ch, Func &&f)
-    -> decltype(std::forward<Func>(f)(ch.template get_unchecked<I>()))
+decltype(auto) choice_apply_thunk(Choice &ch, Func &&f)
 {
     return std::forward<Func>(f)(ch.template get_unchecked<I>());
 }
 //----------------------------------------------------------------------------
 template<unsigned I, class Choice, class Func>
-auto choice_set_default_and_apply_thunk(Choice &ch, Func &&f)
-    -> decltype(std::forward<Func>(f)(ch.template set_default<I>()))
+decltype(auto) choice_set_default_and_apply_thunk(Choice &ch, Func &&f)
 {
     return std::forward<Func>(f)(ch.template set_default<I>());
 }
 //----------------------------------------------------------------------------
 template<class Choice, class Func, size_t... I>
-inline auto choice_apply_impl(Choice &ch, Func &&f, __vic::index_sequence<I...> )
-    -> decltype(choice_apply_thunk<0>(ch, std::forward<Func>(f)))
+inline decltype(auto) choice_apply_impl(
+    Choice &ch, Func &&f, std::index_sequence<I...>)
 {
     static const decltype(&choice_apply_thunk<0,Choice,Func>)
         func[] = { &choice_apply_thunk<I>... };
@@ -744,9 +724,8 @@ inline auto choice_apply_impl(Choice &ch, Func &&f, __vic::index_sequence<I...> 
 }
 //----------------------------------------------------------------------------
 template<class Choice, class Func, size_t... I>
-inline auto choice_set_default_and_apply_impl(
-        Choice &ch, unsigned idx, Func &&f, __vic::index_sequence<I...> )
-    -> decltype(choice_set_default_and_apply_thunk<0>(ch, std::forward<Func>(f)))
+inline decltype(auto) choice_set_default_and_apply_impl(
+        Choice &ch, unsigned idx, Func &&f, std::index_sequence<I...>)
 {
     static const decltype(&choice_set_default_and_apply_thunk<0,Choice,Func>)
         func[] = { &choice_set_default_and_apply_thunk<I>... };
@@ -755,19 +734,18 @@ inline auto choice_set_default_and_apply_impl(
 }
 //----------------------------------------------------------------------------
 template<class Choice, class Func>
-inline auto choice_apply(Choice &ch, Func &&f)
-    -> decltype(choice_apply_thunk<0>(ch, std::forward<Func>(f)))
+inline decltype(auto) choice_apply(Choice &ch, Func &&f)
 {
     return choice_apply_impl(ch, std::forward<Func>(f),
-        __vic::make_index_sequence<Choice::size()>{});
+        std::make_index_sequence<Choice::size()>{});
 }
 //----------------------------------------------------------------------------
 template<class Choice, class Func>
-inline auto choice_set_default_and_apply(Choice &ch, unsigned idx, Func &&f)
-    -> decltype(choice_set_default_and_apply_thunk<0>(ch, std::forward<Func>(f)))
+inline decltype(auto) choice_set_default_and_apply(
+    Choice &ch, unsigned idx, Func &&f)
 {
     return choice_set_default_and_apply_impl(ch, idx, std::forward<Func>(f),
-        __vic::make_index_sequence<Choice::size()>{});
+        std::make_index_sequence<Choice::size()>{});
 }
 //----------------------------------------------------------------------------
 } // namespace
@@ -805,18 +783,16 @@ private:
     using wrapped_option_type = impl::choice_option<option_type<I>>;
 
     template<unsigned I, class Func>
-    auto choose_and_apply(type_tag_t tag, Func &&f) ->
-        typename std::enable_if< (I == size()-1U),
-        decltype(std::forward<Func>(f)(this->set_default<I>()))>::type
+    decltype(auto) choose_and_apply(
+        std::enable_if_t<I == size()-1U, type_tag_t> tag, Func &&f)
     {
         if(option_type<I>::tag() == tag)
             return std::forward<Func>(f)(set_default<I>());
         throw invalid_choice_tag{};
     }
     template<unsigned I, class Func>
-    auto choose_and_apply(type_tag_t tag, Func &&f) ->
-        typename std::enable_if< (I < size()-1U),
-        decltype(std::forward<Func>(f)(this->set_default<I>()))>::type
+    decltype(auto) choose_and_apply(
+        std::enable_if_t<(I < size()-1U), type_tag_t> tag, Func &&f)
     {
         if(option_type<I>::tag() == tag)
             return std::forward<Func>(f)(set_default<I>());
@@ -834,24 +810,24 @@ public:
     CHOICE &operator=(const CHOICE &o) { CHOICE(o).swap(*this); return *this; }
     CHOICE &operator=(CHOICE &&o) noexcept { swap(o); return *this; }
 
-    template<unsigned I> option_type<I> &get_unchecked()
+    template<unsigned I> auto &get_unchecked()
     {
         //static_assert(I < size(), "Invalid index");
         assert(is_set());
         return static_cast<wrapped_option_type<I> &>(*p).unwrap();
     }
-    template<unsigned I> const option_type<I> &get_unchecked() const
+    template<unsigned I> const auto &get_unchecked() const
     {
         assert(is_set());
         return static_cast<const wrapped_option_type<I> &>(*p).unwrap();
     }
 
-    template<unsigned I> option_type<I> &get()
+    template<unsigned I> auto &get()
     {
         if(I != curr) throw invalid_choice_index{};
         return get_unchecked<I>();
     }
-    template<unsigned I> const option_type<I> &get() const
+    template<unsigned I> const auto &get() const
     {
         if(I != curr) throw invalid_choice_index{};
         return get_unchecked<I>();
@@ -870,27 +846,23 @@ public:
 
     // Applies generic function to the current option
     template<class Func>
-    typename std::result_of<Func(option_type<0> &)>::type
-    apply_unchecked(Func &&f)
+    decltype(auto) apply_unchecked(Func &&f)
     {
         return impl::choice_apply(*this, std::forward<Func>(f));
     }
     template<class Func>
-    typename std::result_of<Func(option_type<0> &)>::type
-    apply_unchecked(Func &&f) const
+    decltype(auto) apply_unchecked(Func &&f) const
     {
         return impl::choice_apply(*this, std::forward<Func>(f));
     }
     template<class Func>
-    typename std::result_of<Func(option_type<0> &)>::type
-    apply(Func &&f)
+    decltype(auto) apply(Func &&f)
     {
         validate();
         return apply_unchecked(std::forward<Func>(f));
     }
     template<class Func>
-    typename std::result_of<Func(option_type<0> &)>::type
-    apply(Func &&f) const
+    decltype(auto) apply(Func &&f) const
     {
         validate();
         return apply_unchecked(std::forward<Func>(f));
@@ -898,8 +870,7 @@ public:
 
     // Calls set_default<idx>() and applies generic function to the created option
     template<class Func>
-    typename std::result_of<Func(option_type<0> &)>::type
-    set_default_and_apply(unsigned idx, Func &&f)
+    decltype(auto) set_default_and_apply(unsigned idx, Func &&f)
     {
         if(idx >= size()) throw invalid_choice_index{};
         return impl::choice_set_default_and_apply(
@@ -907,8 +878,7 @@ public:
     }
     // Finds option with specified tag, sets default value and applies generic function to it
     template<class Func>
-    typename std::result_of<Func(option_type<0> &)>::type
-    set_default_and_apply(type_tag_t tag, Func &&f)
+    decltype(auto) set_default_and_apply(type_tag_t tag, Func &&f)
     {
         return choose_and_apply<0>(tag, std::forward<Func>(f));
     }
@@ -979,18 +949,16 @@ private:
         { return std::strcmp(s1, s2) == 0; }
 
     template<unsigned I, class Func>
-    auto choose_and_apply(const char *d, Func &&f) ->
-        typename std::enable_if<(I == size()-1U),
-        decltype(std::forward<Func>(f)(this->set_default<I>()))>::type
+    decltype(auto) choose_and_apply(
+        std::enable_if_t<I == size()-1U, const char *> d, Func &&f)
     {
         if(eq(d, wrapped_option_type<I>::id()))
             return std::forward<Func>(f)(set_default<I>());
         throw invalid_choice_tag{};
     }
     template<unsigned I, class Func>
-    auto choose_and_apply(const char *d, Func &&f) ->
-        typename std::enable_if<(I < size()-1U),
-        decltype(std::forward<Func>(f)(this->set_default<I>()))>::type
+    decltype(auto) choose_and_apply(
+        std::enable_if_t<(I < size()-1U), const char *> d, Func &&f)
     {
         if(eq(d, wrapped_option_type<I>::id()))
             return std::forward<Func>(f)(set_default<I>());
@@ -1010,23 +978,23 @@ public:
     CLASS_CHOICE &operator=(CLASS_CHOICE &&o) noexcept
         { swap(o); return *this; }
 
-    template<unsigned I> option_type<I> &get_unchecked()
+    template<unsigned I> auto &get_unchecked()
     {
         assert(is_set());
         return static_cast<wrapped_option_type<I> &>(*p).unwrap();
     }
-    template<unsigned I> const option_type<I> &get_unchecked() const
+    template<unsigned I> const auto &get_unchecked() const
     {
         assert(is_set());
         return static_cast<const wrapped_option_type<I> &>(*p).unwrap();
     }
 
-    template<unsigned I> option_type<I> &get()
+    template<unsigned I> auto &get()
     {
         if(I != curr) throw invalid_choice_index{};
         return get_unchecked<I>();
     }
-    template<unsigned I> const option_type<I> &get() const
+    template<unsigned I> const auto &get() const
     {
         if(I != curr) throw invalid_choice_index{};
         return get_unchecked<I>();
@@ -1034,27 +1002,23 @@ public:
 
     // Applies generic function to current option
     template<class Func>
-    typename std::result_of<Func(option_type<0> &)>::type
-    apply_unchecked(Func &&f)
+    decltype(auto) apply_unchecked(Func &&f)
     {
         return impl::choice_apply(*this, std::forward<Func>(f));
     }
     template<class Func>
-    typename std::result_of<Func(const option_type<0> &)>::type
-    apply_unchecked(Func &&f) const
+    decltype(auto) apply_unchecked(Func &&f) const
     {
         return impl::choice_apply(*this, std::forward<Func>(f));
     }
     template<class Func>
-    typename std::result_of<Func(option_type<0> &)>::type
-    apply(Func &&f)
+    decltype(auto) apply(Func &&f)
     {
         validate();
         return apply_unchecked(std::forward<Func>(f));
     }
     template<class Func>
-    typename std::result_of<Func(const option_type<0> &)>::type
-    apply(Func &&f) const
+    decltype(auto) apply(Func &&f) const
     {
         validate();
         return apply_unchecked(std::forward<Func>(f));
@@ -1062,14 +1026,12 @@ public:
 
     // Sets new option and applies generic function to it
     template<class Func>
-    typename std::result_of<Func(option_type<0> &)>::type
-    set_default_and_apply(const char *oid, Func &&f)
+    decltype(auto) set_default_and_apply(const char *oid, Func &&f)
     {
         return choose_and_apply<0>(oid, std::forward<Func>(f));
     }
     template<class Func>
-    typename std::result_of<Func(option_type<0> &)>::type
-    set_default_and_apply(const std::string &oid, Func &&f)
+    decltype(auto) set_default_and_apply(const std::string &oid, Func &&f)
     {
         return set_default_and_apply(oid.c_str(), std::forward<Func>(f));
     }

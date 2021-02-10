@@ -134,7 +134,7 @@ namespace __vic { namespace asn1 {
 //---------------------------------------------------------------------------
 // Validator for a deserializer
 template<>
-inline bool is_enum_value<Status>(std::underlying_type<Status>::type int_val)
+inline bool is_enum_value<Status>(std::underlying_type_t<Status> int_val)
 {
     return int_val == stOk || int_val == stError;
 }

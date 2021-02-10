@@ -1,6 +1,6 @@
 // Internal implementation header
 //
-// Platform: ISO C++ 11
+// Platform: ISO C++ 14
 // $Id$
 
 #ifndef __VIC_ASN1_BER_IMPL_BASIC_DESERIALIZER_H
@@ -217,24 +217,6 @@ private:
     template<class Deserializer, class OID, class... Opts>
     static void deserialize_class_option(
         Deserializer & , CLASS_CHOICE<OID,Opts...> & , OID && );
-
-    template<class Deserializer>
-    struct choice_option_deserializer // "generic lambda"
-    {
-        Deserializer &ds;
-        pc_t p_c;
-
-        template<class T>
-        void operator()(T &opt) const { ds.deserialize_lv(opt, p_c); }
-    };
-    template<class Deserializer>
-    struct class_option_deserializer // "generic lambda"
-    {
-        Deserializer &ds;
-
-        template<class T>
-        void operator()(T &opt) const { ds.deserialize(opt); }
-    };
 };
 //////////////////////////////////////////////////////////////////////////////
 template<class StreamReader>
@@ -491,7 +473,7 @@ inline bool deserializer_base::deserialize_choice_option(
 {
     try {
         ch.set_default_and_apply(t.tag(),
-            choice_option_deserializer<Deserializer>{ds, t.p_c()});
+            [&](auto &opt){ ds.deserialize_lv(opt, t.p_c()); });
         return true;
     } catch(const invalid_choice_tag &) {
         return false;
@@ -513,7 +495,7 @@ inline void deserializer_base::deserialize_class_option(
 {
     try {
         ch.set_default_and_apply(oid.c_str(),
-            class_option_deserializer<Deserializer>{ds});
+            [&ds](auto &opt){ ds.deserialize(opt); });
     } catch(const invalid_choice_tag &) {
         throw bad_format(__vic::msg(64) <<
             "Invalid CLASS discriminant: \"" << oid << '"');

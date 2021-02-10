@@ -1,6 +1,6 @@
 // ASN.1 BER serializer
 //
-// Platform: ISO C++ 11
+// Platform: ISO C++ 14
 // $Id$
 
 #ifndef __VIC_ASN1_BER_SERIALIZER_H
@@ -59,11 +59,11 @@ public:
     using base::serialize;
 
     template<tag_number_t Tag, class T, tag_class_t Cls>
-    typename std::enable_if<der::is_primitive<T>()>::type
+    std::enable_if_t<der::is_primitive<T>()>
         serialize(const IMPLICIT<Tag,T,Cls> & );
 
     template<tag_number_t Tag, class T, tag_class_t Cls>
-    typename std::enable_if<der::is_constructed<T>()>::type
+    std::enable_if_t<der::is_constructed<T>()>
         serialize(const IMPLICIT<Tag,T,Cls> & );
 
     template<tag_number_t Tag, class T, tag_class_t Cls>
@@ -107,7 +107,7 @@ inline void serializer<SW>::serialize_constructed_lv(const T &v)
 //----------------------------------------------------------------------------
 template<class SW>
 template<tag_number_t Tag, class T, tag_class_t Cls>
-typename std::enable_if<der::is_primitive<T>()>::type
+std::enable_if_t<der::is_primitive<T>()>
     serializer<SW>::serialize(const IMPLICIT<Tag,T,Cls> &v)
 {
     write_primitive_type(v.tag());
@@ -117,7 +117,7 @@ typename std::enable_if<der::is_primitive<T>()>::type
 //----------------------------------------------------------------------------
 template<class SW>
 template<tag_number_t Tag, class T, tag_class_t Cls>
-typename std::enable_if<der::is_constructed<T>()>::type
+std::enable_if_t<der::is_constructed<T>()>
     serializer<SW>::serialize(const IMPLICIT<Tag,T,Cls> &v)
 {
     write_constructed_type(v.tag());

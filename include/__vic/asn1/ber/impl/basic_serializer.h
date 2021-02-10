@@ -1,6 +1,6 @@
 // Internal implementation header
 //
-// Platform: ISO C++ 11
+// Platform: ISO C++ 14
 // $Id$
 
 #ifndef __VIC_ASN1_BER_IMPL_BASIC_SERIALIZER_H
@@ -27,14 +27,6 @@ class serializer_base
         void operator()(const OPTIONAL<T> &v) const
             { if(v.is_set()) s.serialize(v.get()); }
     };
-    template<class Serializer>
-    struct choice_option_serializer // "generic lambda"
-    {
-        Serializer &s;
-
-        template<class T>
-        void operator()(const T &opt) const { s.serialize(opt); }
-    };
 protected:
     template<class... > struct always_false : std::false_type {};
 
@@ -53,14 +45,14 @@ protected:
     template<class Serializer, class... Opts>
     static void serialize_choice(Serializer &s, const CHOICE<Opts...> &ch)
     {
-        ch.apply(choice_option_serializer<Serializer>{s});
+        ch.apply([&s](const auto &opt){ s.serialize(opt); });
     }
     template<class Serializer, class OID, class... Opts>
     static void serialize_class(Serializer &s, const CLASS_CHOICE<OID,Opts...> &ch)
     {
         ch.validate(); // throws
         s.serialize(ch.oid()); // serialize discriminant-field
-        ch.apply_unchecked(choice_option_serializer<Serializer>{s});
+        ch.apply_unchecked([&s](const auto &opt){ s.serialize(opt); });
     }
 };
 //////////////////////////////////////////////////////////////////////////////

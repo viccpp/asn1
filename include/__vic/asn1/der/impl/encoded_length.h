@@ -1,6 +1,6 @@
 // Internal implementation header
 //
-// Platform: ISO C++ 11
+// Platform: ISO C++ 14
 // $Id$
 
 #ifndef __VIC_ASN1_DER_IMPL_ENCODED_LENGTH_H
@@ -61,12 +61,6 @@ size_t encoded_length(const SEQUENCE_OF<T,SeqCont> & );
 template<class... Opts>
 size_t encoded_length(const CHOICE<Opts...> & );
 //----------------------------------------------------------------------------
-struct choice_option_encoded_length // "generic lambda"
-{
-    template<class T>
-    size_t operator()(const T &opt) const { return encoded_length(opt); }
-};
-//----------------------------------------------------------------------------
 
 //----------------------------------------------------------------------------
 template<class T>
@@ -88,7 +82,8 @@ template<class T, class OID, class... Opts> // T is CLASS_CHOICE<>
 inline size_t tlv_length_or_class(
     const T &ch, const CLASS_CHOICE<OID,Opts...>  * )
 {
-    size_t opt_len = ch.apply(choice_option_encoded_length{});
+    size_t opt_len = ch.apply(
+        [](const auto &opt){ return encoded_length(opt); });
     return tlv_length(ch.oid()) +
            ber::type_field_length(ch.option_tag()) +
            ber::length_field_length(opt_len) +
@@ -149,7 +144,7 @@ size_t encoded_length(const SEQUENCE_OF<T,SeqCont> &seq)
 template<class... Opts>
 inline size_t encoded_length(const CHOICE<Opts...> &ch)
 {
-    return ch.apply(choice_option_encoded_length{});
+    return ch.apply([](const auto &opt){ return encoded_length(opt); });
 }
 //----------------------------------------------------------------------------
 
