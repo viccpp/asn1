@@ -75,14 +75,14 @@ class deserializer : public ber::basic_deserializer<StreamReader>
         if(read_length(len)) // definite
         {
             push_limit(len);
-            while(have_more_bytes()) deserialize(seq.push_default());
+            while(have_more_bytes()) deserialize(seq.emplace_back());
             pop_limit();
         }
         else // indefinite
         {
             type_field_t t;
             while(read_type_or_eoc(t))
-                deserialize_lv_or_choice(seq.push_default(), t);
+                deserialize_lv_or_choice(seq.emplace_back(), t);
         }
     }
     template<class T>

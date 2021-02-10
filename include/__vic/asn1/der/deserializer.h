@@ -65,7 +65,7 @@ class deserializer : public ber::basic_deserializer<StreamReader>
         check_constructed(p_c);
         push_limit(read_definite_length());
         seq.clear();
-        while(have_more_bytes()) deserialize(seq.push_default());
+        while(have_more_bytes()) deserialize(seq.emplace_back());
         pop_limit();
     }
 

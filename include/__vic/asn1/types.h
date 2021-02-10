@@ -564,7 +564,12 @@ public:
     SEQUENCE_OF &operator=(SEQUENCE_OF && ) = default;
     SEQUENCE_OF &operator=(const SEQUENCE_OF & ) = default;
 
-    T &push_default() { this->emplace_back(); return this->back(); }
+    template<class... Args>
+    T &emplace_back(Args&&... args)
+    {
+        container_type::emplace_back(std::forward<Args>(args)...);
+        return this->back();
+    }
 };
 //////////////////////////////////////////////////////////////////////////////
 
