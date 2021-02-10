@@ -1,6 +1,6 @@
 // ASN.1-types
 //
-// Platform: ISO C++ 14
+// Platform: ISO C++ 17
 // $Id$
 
 #ifndef __VIC_ASN1_TYPES_H
@@ -419,10 +419,16 @@ public:
     const Head &head() const { return head_; }
     sequence_elements<> tail() const { return {}; }
 
-    template<unsigned I>
-    std::enable_if_t<I == 0U, Head &> get() { return head(); }
-    template<unsigned I>
-    std::enable_if_t<I == 0U, const Head &> get() const { return head(); }
+    template<unsigned I> Head &get()
+    {
+        static_assert(I == 0U, "Invalid index");
+        return head();
+    }
+    template<unsigned I> const Head &get() const
+    {
+        static_assert(I == 0U, "Invalid index");
+        return head();
+    }
 
     template<class F> void for_each(F &&f) { std::forward<F>(f)(head()); }
     template<class F> void for_each(F &&f) const { std::forward<F>(f)(head()); }
@@ -439,15 +445,24 @@ public:
     const Head &head() const { return head_; }
     const sequence_elements<Tail...> &tail() const { return tail_; }
 
-    template<unsigned I>
-    std::enable_if_t<I == 0U, Head &> get() { return head(); }
-    template<unsigned I>
-    std::enable_if_t<I == 0U, const Head &> get() const { return head(); }
-
-    template<unsigned I, std::enable_if_t<(0U < I && I <= sizeof...(Tail)),int> = 0>
-    auto &get() { return tail().template get<I - 1U>(); }
-    template<unsigned I, std::enable_if_t<(0U < I && I <= sizeof...(Tail)),int> = 0>
-    const auto &get() const { return tail().template get<I - 1U>(); }
+    template<unsigned I> auto &get()
+    {
+        if constexpr(I == 0U)
+            return head();
+        else if constexpr(I <= sizeof...(Tail))
+            return tail().template get<I - 1U>();
+        else
+            static_assert(I != I, "Invalid index");
+    }
+    template<unsigned I> const auto &get() const
+    {
+        if constexpr(I == 0U)
+            return head();
+        else if constexpr(I <= sizeof...(Tail))
+            return tail().template get<I - 1U>();
+        else
+            static_assert(I != I, "Invalid index");
+    }
 
     template<class F> void for_each(F &&f)
         { std::forward<F>(f)(head()); tail().for_each(std::forward<F>(f)); }
@@ -783,20 +798,14 @@ private:
     using wrapped_option_type = impl::choice_option<option_type<I>>;
 
     template<unsigned I, class Func>
-    decltype(auto) choose_and_apply(
-        std::enable_if_t<I == size()-1U, type_tag_t> tag, Func &&f)
+    decltype(auto) choose_and_apply(type_tag_t tag, Func &&f)
     {
         if(option_type<I>::tag() == tag)
             return std::forward<Func>(f)(set_default<I>());
-        throw invalid_choice_tag{};
-    }
-    template<unsigned I, class Func>
-    decltype(auto) choose_and_apply(
-        std::enable_if_t<(I < size()-1U), type_tag_t> tag, Func &&f)
-    {
-        if(option_type<I>::tag() == tag)
-            return std::forward<Func>(f)(set_default<I>());
-        return choose_and_apply<I+1>(tag, std::forward<Func>(f));
+        if constexpr(I < size()-1U)
+            return choose_and_apply<I+1>(tag, std::forward<Func>(f));
+        else // I == size()-1U
+            throw invalid_choice_tag{};
     }
 protected:
     using self_type = CHOICE<Opts...>;
@@ -949,20 +958,14 @@ private:
         { return std::strcmp(s1, s2) == 0; }
 
     template<unsigned I, class Func>
-    decltype(auto) choose_and_apply(
-        std::enable_if_t<I == size()-1U, const char *> d, Func &&f)
+    decltype(auto) choose_and_apply(const char *d, Func &&f)
     {
         if(eq(d, wrapped_option_type<I>::id()))
             return std::forward<Func>(f)(set_default<I>());
-        throw invalid_choice_tag{};
-    }
-    template<unsigned I, class Func>
-    decltype(auto) choose_and_apply(
-        std::enable_if_t<(I < size()-1U), const char *> d, Func &&f)
-    {
-        if(eq(d, wrapped_option_type<I>::id()))
-            return std::forward<Func>(f)(set_default<I>());
-        return choose_and_apply<I+1>(d, std::forward<Func>(f));
+        if constexpr(I < size()-1U)
+            return choose_and_apply<I+1>(d, std::forward<Func>(f));
+        else // I == size()-1U
+            throw invalid_choice_tag{};
     }
 protected:
     using self_type = CLASS_CHOICE<OID,Opts...>;

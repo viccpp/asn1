@@ -6,7 +6,7 @@ export LANG=C
 usage() {
     cat <<EOF
 Usage: $1 [std={98|11|14|17}] [compiler={gcc|clang|intel}] [pic|--with-pic]"
-    std=XX          - compile using C++XX mode [14 is default]
+    std=XX          - compile using C++XX mode [17 is default]
     compiler=CC     - compile using CC [gcc is default]
     --with-pic, pic  - compile with -fPIC
     --help           - show this help
@@ -15,7 +15,7 @@ EOF
 cleanup() { rm -f src/Makefile src/os_config.h test/Makefile; }
 die() { echo "ERROR: $1"; cleanup; exit 1; }
 CXX_TYPE=gcc
-CXX_STD=14
+CXX_STD=17
 LIBSUFF=$CXX_STD
 
 # Check params
