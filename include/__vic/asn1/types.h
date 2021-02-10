@@ -427,7 +427,7 @@ class sequence_elements<Head>
 public:
     Head &head() { return head_; }
     const Head &head() const { return head_; }
-    sequence_elements<> tail() const { return sequence_elements<>{}; }
+    sequence_elements<> tail() const { return {}; }
 
     template<unsigned I>
     typename std::enable_if<I == 0U, Head &>::type get() { return head(); }
@@ -457,11 +457,11 @@ public:
         { return head(); }
 
     template<unsigned I>
-    typename std::enable_if<(I > 0U && I <= sizeof...(Tail) + 1U),
+    typename std::enable_if<(0U < I && I <= sizeof...(Tail)),
         choose_type<I, Head, Tail...>
     >::type &get() { return tail().template get<I - 1U>(); }
     template<unsigned I>
-    typename std::enable_if<(I > 0U && I <= sizeof...(Tail) + 1U),
+    typename std::enable_if<(0U < I && I <= sizeof...(Tail)),
         choose_type<I, Head, Tail...>
     >::type const &get() const { return tail().template get<I - 1U>(); }
 
