@@ -142,12 +142,7 @@ public:
 //----------------------------------------------------------------------------
 inline bool decoder_base::is_eoc(const type_field_t &t)
 {
-#if __cplusplus >= 201103L // C++11
-    if(t.tag() != EOC)
-#else // C++98
-    if(t.tag_number() != 0 || t.tag_class() != universal)
-#endif
-        return false;
+    if(!t.tag().is_eoc()) return false;
     if(t.p_c() != primitive) throw constructed_eoc_error();
     return true;
 }

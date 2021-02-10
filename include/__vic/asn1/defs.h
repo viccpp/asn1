@@ -47,6 +47,9 @@ public:
     __VIC_CONSTEXPR_FUNC tag_number_t number() const { return num_; }
     __VIC_CONSTEXPR_FUNC tag_class_t class_() const { return cls_; }
 
+    __VIC_CONSTEXPR_FUNC bool is_eoc() const
+        { return number() == 0 && class_() == universal; }
+
     tag_number_t &number_ref() { return num_; }
     tag_class_t &class_ref() { return cls_; }
 };
