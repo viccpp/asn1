@@ -232,7 +232,7 @@ public:
 template<class Enum>
 class ENUMERATED
 {
-    static_assert(std::is_enum<Enum>(), "enum-type required for ENUMERATED");
+    static_assert(std::is_enum<Enum>::value, "enum-type required for ENUMERATED");
     Enum val;
 public:
     using enum_type = Enum;
@@ -487,12 +487,12 @@ public:
 
     SEQUENCE();
     SEQUENCE(SEQUENCE && ) noexcept(
-        std::is_nothrow_move_constructible<elements_type>());
+        std::is_nothrow_move_constructible<elements_type>::value);
     SEQUENCE(const SEQUENCE & );
     ~SEQUENCE();
 
     SEQUENCE &operator=(SEQUENCE && ) noexcept(
-        std::is_nothrow_move_assignable<elements_type>());
+        std::is_nothrow_move_assignable<elements_type>::value);
     SEQUENCE &operator=(const SEQUENCE & );
 
     template<unsigned I>
@@ -523,7 +523,7 @@ SEQUENCE<Elems...>::SEQUENCE() = default;
 //----------------------------------------------------------------------------
 template<class... Elems>
 SEQUENCE<Elems...>::SEQUENCE(SEQUENCE<Elems...> && )
-    noexcept(std::is_nothrow_move_constructible<elements_type>()) = default;
+    noexcept(std::is_nothrow_move_constructible<elements_type>::value) = default;
 //----------------------------------------------------------------------------
 template<class... Elems>
 SEQUENCE<Elems...>::SEQUENCE(const SEQUENCE<Elems...> & ) = default;
@@ -533,7 +533,7 @@ SEQUENCE<Elems...>::~SEQUENCE() = default;
 //----------------------------------------------------------------------------
 template<class... Elems>
 SEQUENCE<Elems...> &SEQUENCE<Elems...>::operator=(SEQUENCE<Elems...> && )
-    noexcept(std::is_nothrow_move_assignable<elements_type>()) = default;
+    noexcept(std::is_nothrow_move_assignable<elements_type>::value) = default;
 //----------------------------------------------------------------------------
 template<class... Elems>
 SEQUENCE<Elems...> &SEQUENCE<Elems...>::operator=(const SEQUENCE<Elems...> & )
@@ -597,7 +597,7 @@ inline void assign_trunc_(UTF8String &s, size_t max, const std::string &v)
 template<class StrT, size_t MinLength, size_t MaxLength = MinLength>
 struct SIZE : public StrT
 {
-    static_assert(std::is_base_of<RestrictedCharacterStringType, StrT>(),
+    static_assert(std::is_base_of<RestrictedCharacterStringType, StrT>::value,
         "Size constraint unapplicable for this type");
     static_assert(MinLength <= MaxLength, "Invalid size constraint");
 
