@@ -46,7 +46,7 @@ const char * const universal_types_names[] =
 } // namespace
 
 //----------------------------------------------------------------------------
-void to_text(type_tag_t t, std::string &res)
+void to_text_append(type_tag_t t, std::string &res)
 {
     bool is_context_spec = true;
     switch(t.class_())

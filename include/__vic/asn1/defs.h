@@ -143,16 +143,16 @@ inline const char *as_text(tag_class_t cls)
     return tag_class_names[cls];
 }
 //----------------------------------------------------------------------------
-void to_text(type_tag_t , std::string & );
+void to_text_append(type_tag_t , std::string & );
 
 inline std::string to_text(type_tag_t t)
-{ std::string res; to_text(t, res); return res; }
+{ std::string res; to_text_append(t, res); return res; }
 
 inline __vic::string_buffer &operator<<(__vic::string_buffer &s, type_tag_t t)
-{ to_text(t, s); return s; }
+{ to_text_append(t, s); return s; }
 #if __cpp_rvalue_references
 inline __vic::string_buffer &&operator<<(__vic::string_buffer &&s, type_tag_t t)
-{ to_text(t, s); return std::move(s); }
+{ to_text_append(t, s); return std::move(s); }
 #endif
 
 }} // namespace
