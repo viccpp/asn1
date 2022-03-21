@@ -1,12 +1,12 @@
 ##############################################################
 # GNU Make Makefile
 
-.PHONY: all install test distclean clean
+.PHONY: all install tests distclean clean
 
 all: src/Makefile
 	cd src && $(MAKE)
 
-test: test/Makefile
+tests: test/Makefile
 	cd test && $(MAKE)
 
 distclean: clean

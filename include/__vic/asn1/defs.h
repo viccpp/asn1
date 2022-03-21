@@ -49,16 +49,13 @@ public:
 
     __VIC_CONSTEXPR_FUNC bool is_eoc() const
         { return number() == 0 && class_() == universal; }
-
-    tag_number_t &number_ref() { return num_; }
-    tag_class_t &class_ref() { return cls_; }
 };
 //////////////////////////////////////////////////////////////////////////////
 class type_field_t
 {
     tag_number_t num_;
-    tag_class_t cls_;
-    primitive_constructed p_c_;
+    tag_class_t cls_ : 4;
+    primitive_constructed p_c_ : 1;
 public:
     type_field_t() __VIC_DEFAULT_CTR
     __VIC_CONSTEXPR_FUNC type_field_t(type_tag_t t, primitive_constructed pc)
@@ -77,10 +74,6 @@ public:
     __VIC_CONSTEXPR_FUNC primitive_constructed p_c() const { return p_c_; }
     __VIC_CONSTEXPR_FUNC bool is_primitive() const { return p_c_ == primitive; }
     __VIC_CONSTEXPR_FUNC bool is_constructed() const { return p_c_ == constructed; }
-
-    tag_number_t &tag_number_ref() { return num_; }
-    tag_class_t &tag_class_ref() { return cls_; }
-    primitive_constructed &p_c_ref() { return p_c_; }
 };
 //////////////////////////////////////////////////////////////////////////////
 

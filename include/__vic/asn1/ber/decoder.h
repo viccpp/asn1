@@ -119,11 +119,25 @@ public:
     void skip_rest();
 
     // Returns false if no bytes to read
-    bool read_type(tag_class_t & , tag_number_t & , primitive_constructed & );
-    bool read_type(type_tag_t &t, primitive_constructed &p_c)
-        { return read_type(t.class_ref(), t.number_ref(), p_c); }
-    bool read_type(type_field_t &t)
-        { return read_type(t.tag_class_ref(), t.tag_number_ref(), t.p_c_ref()); }
+    bool read_type(
+        tag_class_t &cls, tag_number_t &num, primitive_constructed &p_c)
+    {
+        type_field_t t;
+        if(!read_type(t)) return false;
+        cls = t.tag_class();
+        num = t.tag_number();
+        p_c = t.p_c();
+        return true;
+    }
+    bool read_type(type_tag_t &tag, primitive_constructed &p_c)
+    {
+        type_field_t t;
+        if(!read_type(t)) return false;
+        tag = t.tag();
+        p_c = t.p_c();
+        return true;
+    }
+    bool read_type(type_field_t & );
     template<class TUInt> bool read_type_raw(TUInt & );
 
     // Returns false if length is indefinite
@@ -200,18 +214,17 @@ void decoder<SR>::skip_rest()
 }
 //----------------------------------------------------------------------------
 template<class SR>
-bool decoder<SR>::read_type(
-    tag_class_t &cls, tag_number_t &tag, primitive_constructed &p_c)
+bool decoder<SR>::read_type(type_field_t &tf)
 {
     uint8_t b;
     if(!read(b)) return false;
 
-    cls = static_cast<tag_class_t>(b >> 6);
-    p_c = static_cast<primitive_constructed>((b >> 5) & 1);
+    tag_class_t cls = static_cast<tag_class_t>(b >> 6);
+    primitive_constructed p_c = static_cast<primitive_constructed>((b >> 5) & 1);
     tag_number_t t = b & 0x1FU;
     if(t != 0x1FU) // trivial case - low-tag-number form
     {
-        tag = t;
+        tf = type_field_t(cls, t, p_c);
         return true;
     }
 
@@ -228,7 +241,7 @@ bool decoder<SR>::read_type(
         t |= b & 0x7FU;
         if(is_last)
         {
-            tag = t;
+            tf = type_field_t(cls, t, p_c);
             return true; // Done
         }
         else if(i == sizeof t)
