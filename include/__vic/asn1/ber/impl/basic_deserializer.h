@@ -253,7 +253,7 @@ protected:
 
     template<class Str> void read_value_bytes(Str & , size_t );
     template<class Str> void append_value_bytes(Str & , size_t );
-    uint8_t read_boolean_value();
+    unsigned char read_boolean_value();
     template<class Int> Int read_integer(size_t len)
         { return rd.template read_integer<Int>(len); }
 
@@ -374,7 +374,7 @@ void basic_deserializer<SR>::append_value_bytes(Str &v, size_t len)
 }
 //----------------------------------------------------------------------------
 template<class SR>
-uint8_t basic_deserializer<SR>::read_boolean_value()
+unsigned char basic_deserializer<SR>::read_boolean_value()
 {
     if(read_definite_length() != 1) throw bad_format("Invalid value length");
     return rd.read_value_byte();

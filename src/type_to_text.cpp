@@ -4,7 +4,7 @@
 
 #include<__vic/defs.h>
 #include<__vic/asn1/defs.h>
-#include<cstdio> // for std::snprintf()
+#include<__vic/to_text.h>
 
 namespace __vic { namespace asn1 {
 
@@ -26,7 +26,7 @@ const char * const universal_types_names[] =
     "UTF8String",       // 12
     "RELATIVE-OID",     // 13
     "[UNIVERSAL 14]",   // 14
-    "[UNIVERSAL	15]",   // 15
+    "[UNIVERSAL 15]",   // 15
     "SEQUENCE (OF)",    // 16
     "SET (OF)",         // 17
     "NumericString",    // 18
@@ -57,22 +57,16 @@ void to_text_append(type_tag_t t, std::string &res)
                 res += universal_types_names[t.number()];
                 return;
             }
-            // fall in
+            // fallthrough
         case application:
         case private_:
             ((res += '[') += as_text(t.class_())) += ' ';
             is_context_spec = false;
-            // fall in
+            // fallthrough
         case context_specific:
-        {
             if(is_context_spec) res += '[';
-            // TODO: make more accurate & safe number to text conversion
-            char buf[32];
-            std::snprintf(buf, sizeof buf, "%u",
-                            static_cast<unsigned>(t.number()));
-            res += buf;
+            __vic::to_text_append(t.number(), res);
             res += ']';
-        }
     }
 }
 //----------------------------------------------------------------------------

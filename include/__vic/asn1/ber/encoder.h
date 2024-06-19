@@ -17,7 +17,7 @@ namespace __vic { namespace asn1 { namespace ber {
 //  struct StreamWriter
 //  {
 //      StreamWriter(const StreamWriter & ); or StreamWriter();
-//      void write(uint8_t byte);
+//      void write(unsigned char byte);
 //      void write(const void *bytes, size_t n);
 //  };
 //////////////////////////////////////////////////////////////////////////////
@@ -38,7 +38,7 @@ public:
     explicit encoder(const StreamWriter &s) : w(s) {}
 #endif
 
-    void write(uint8_t byte) { w.write(byte); }
+    void write(unsigned char byte) { w.write(byte); }
     void write(const void *bytes, size_t n) { w.write(bytes, n); }
 
     void write_type(tag_class_t , tag_number_t , primitive_constructed );
@@ -80,7 +80,7 @@ template<class TInt>
 class integer_encoder
 {
     // buffer for bytes of the integer
-    uint8_t buf[sizeof(TInt) + (TInt(-1)<TInt(0) ? 0 : 1)];
+    unsigned char buf[sizeof(TInt) + (TInt(-1)<TInt(0) ? 0 : 1)];
     int buf_ptr;
 public:
     explicit integer_encoder(TInt );
@@ -102,7 +102,7 @@ integer_encoder<TInt>::integer_encoder(TInt v) : buf_ptr(1)
         v >>= 8;
     }
     // if value is positive but MSB is 1
-    if(is_positive && (buf[buf_ptr - 1] & uint8_t(0x80)))
+    if(is_positive && (buf[buf_ptr - 1] & 0x80U))
         buf[buf_ptr++] = 0; // then add leading zero byte
 }
 //----------------------------------------------------------------------------
@@ -118,7 +118,7 @@ void encoder<SW>::write_type(
         return;
     }
     // Using a high-tag-number form
-    uint8_t digits[sizeof tag * 8 / 7 + 1]; // Stack for digits
+    unsigned char digits[sizeof tag * 8 / 7 + 1]; // Stack for digits
     int idx = 0;
     do {
         digits[idx++] = tag & 0x7FU; // less significant 7 bits
@@ -139,7 +139,7 @@ void encoder<SW>::write_length(size_t len)
         return;
     }
     // Using a long form
-    uint8_t digits[sizeof len]; // Stack for digits
+    unsigned char digits[sizeof len]; // Stack for digits
     int idx = 0;
     do {
         digits[idx++] = len & 0xFFU;

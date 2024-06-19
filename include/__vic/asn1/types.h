@@ -52,15 +52,15 @@ class raw
 {
     std::string v;
 public:
-    using value_type = uint8_t;
-    using const_iterator = const uint8_t *;
+    using value_type = unsigned char;
+    using const_iterator = const value_type *;
 
     raw() = default;
     raw(const void *data, size_t len)
         : v(static_cast<const char *>(data), len) {}
 
-    const uint8_t *bytes() const
-        { return reinterpret_cast<const uint8_t *>(v.data()); }
+    const unsigned char *bytes() const
+        { return reinterpret_cast<const unsigned char *>(v.data()); }
     size_t length() const { return v.length(); }
 
     const_iterator begin() const { return bytes(); }
@@ -72,10 +72,10 @@ public:
         { v.assign(static_cast<const char *>(data), n); return *this; }
     raw &append(const void *data, size_t n)
         { v.append(static_cast<const char *>(data), n); return *this; }
-    raw &assign(size_t n, uint8_t b) { v.assign(n, b); return *this; }
-    raw &append(size_t n, uint8_t b) { v.append(n, b); return *this; }
-    raw &assign(uint8_t b) { v  = static_cast<char>(b); return *this; }
-    raw &append(uint8_t b) { v += static_cast<char>(b); return *this; }
+    raw &assign(size_t n, value_type b) { v.assign(n, b); return *this; }
+    raw &append(size_t n, value_type b) { v.append(n, b); return *this; }
+    raw &assign(value_type b) { v  = static_cast<char>(b); return *this; }
+    raw &append(value_type b) { v += static_cast<char>(b); return *this; }
 
     bool empty() const { return v.empty(); }
     void reserve(size_t n) { v.reserve(n); }
@@ -96,13 +96,13 @@ struct OCTET_STRING : public raw
         { raw::assign(data, n); return *this; }
     OCTET_STRING &append(const void *data, size_t n)
         { raw::append(data, n); return *this; }
-    OCTET_STRING &assign(size_t n, uint8_t b)
+    OCTET_STRING &assign(size_t n, unsigned char b)
         { raw::assign(n, b); return *this; }
-    OCTET_STRING &append(size_t n, uint8_t b)
+    OCTET_STRING &append(size_t n, unsigned char b)
         { raw::append(n, b); return *this; }
-    OCTET_STRING &assign(uint8_t b)
+    OCTET_STRING &assign(unsigned char b)
         { raw::assign(b); return *this; }
-    OCTET_STRING &append(uint8_t b)
+    OCTET_STRING &append(unsigned char b)
         { raw::append(b); return *this; }
 
     raw &as_raw() { return *this; }
@@ -640,7 +640,7 @@ struct SIZE<OCTET_STRING,MinLength,MaxLength> : public OCTET_STRING
     template<class... Args>
     SIZE(Args&&... args) : OCTET_STRING(std::forward<Args>(args)...) {}
 
-    SIZE &pad_min(uint8_t b = 0)
+    SIZE &pad_min(unsigned char b = 0)
     {
         auto len = this->length();
         if(len < min_length()) this->append(min_length() - len, b);

@@ -88,7 +88,7 @@ public:
 //  struct StreamReader
 //  {
 //      StreamReader(const StreamReader & ); or StreamReader();
-//      bool read(uint8_t &byte);
+//      bool read(unsigned char &byte);
 //      size_t read_max(void *bytes, size_t n);
 //      // optional members
 //      size_t skip_max(size_t n); // used only for skip_...() implementation
@@ -99,7 +99,7 @@ class decoder : public decoder_base
 {
     StreamReader r;
     bool next_byte_is_0(size_t & );
-    template<class TUInt> TUInt read_type_raw_rest(uint8_t );
+    template<class TUInt> TUInt read_type_raw_rest(unsigned char );
 public:
     typedef StreamReader stream_reader_type;
     stream_reader_type &get_stream_reader() { return r; }
@@ -113,7 +113,7 @@ public:
     explicit decoder(const StreamReader &s) : r(s) {}
 #endif
 
-    bool read(uint8_t & );
+    bool read(unsigned char & );
     size_t read_max(void * , size_t );
     void skip_exact(size_t );
     void skip_rest();
@@ -147,7 +147,7 @@ public:
     template<class TInt> TInt read_integer(size_t );
     template<class TInt> TInt read_integer_lv();
 
-    uint8_t read_value_byte();
+    unsigned char read_value_byte();
     void read_eoc_length();
     bool read_type_or_eoc(type_field_t & );
     template<class TUInt> bool read_type_raw_or_eoc(TUInt & );
@@ -162,7 +162,7 @@ inline bool decoder_base::is_eoc(const type_field_t &t)
 }
 //----------------------------------------------------------------------------
 template<class SR>
-bool decoder<SR>::read(uint8_t &byte)
+bool decoder<SR>::read(unsigned char &byte)
 {
     if(this->is_unlimited()) return r.read(byte);
     if(this->bytes_avail() == 0 || !r.read(byte)) return false;
@@ -216,7 +216,7 @@ void decoder<SR>::skip_rest()
 template<class SR>
 bool decoder<SR>::read_type(type_field_t &tf)
 {
-    uint8_t b;
+    unsigned char b;
     if(!read(b)) return false;
 
     tag_class_t cls = static_cast<tag_class_t>(b >> 6);
@@ -256,7 +256,7 @@ bool decoder<SR>::read_type(type_field_t &tf)
 //----------------------------------------------------------------------------
 template<class SR>
 template<class TUInt>
-inline TUInt decoder<SR>::read_type_raw_rest(uint8_t b)
+inline TUInt decoder<SR>::read_type_raw_rest(unsigned char b)
 {
     if((b & 0x1FU) != 0x1FU) return b; // single byte
     // more than one byte
@@ -276,7 +276,7 @@ template<class SR>
 template<class TUInt>
 bool decoder<SR>::read_type_raw(TUInt &type_field)
 {
-    uint8_t b;
+    unsigned char b;
     if(!read(b)) return false;
     type_field = read_type_raw_rest<TUInt>(b);
     return true;
@@ -285,7 +285,7 @@ bool decoder<SR>::read_type_raw(TUInt &type_field)
 template<class SR>
 bool decoder<SR>::read_length(size_t &len_)
 {
-    uint8_t b;
+    unsigned char b;
     if(!read(b)) throw truncated_stream_error(); // no length-field
 
     if((b & 0x80U) == 0U)  // check the high-order bit
@@ -325,9 +325,9 @@ size_t decoder<SR>::read_definite_length()
 }
 //----------------------------------------------------------------------------
 template<class SR>
-inline uint8_t decoder<SR>::read_value_byte()
+inline unsigned char decoder<SR>::read_value_byte()
 {
-    uint8_t b;
+    unsigned char b;
     if(!read(b)) throw truncated_stream_error(); // not enough bytes of value
     return b;
 }
@@ -335,7 +335,7 @@ inline uint8_t decoder<SR>::read_value_byte()
 template<class SR>
 inline bool decoder<SR>::next_byte_is_0(size_t &len)
 {
-    uint8_t b = read_value_byte();
+    unsigned char b = read_value_byte();
     len--;
     return b == 0;
 }

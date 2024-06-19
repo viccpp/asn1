@@ -126,7 +126,7 @@ template<class SR>
 void deserializer<SR>::deserialize_lv(BOOLEAN &v, pc_t p_c)
 {
     check_primitive(p_c);
-    uint8_t b = this->read_boolean_value();
+    unsigned char b = this->read_boolean_value();
     switch(b)
     {
         case 0x00: v = false; break;

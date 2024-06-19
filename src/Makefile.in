@@ -8,7 +8,7 @@ LIBNAME = @LIBNAME@
 CFLAGS  = -O3 -DNDEBUG
 ARFLAGS = s
 
-SOURCES := $(shell find . @FIND_SRC_EXPR@ | cut -c 3-)
+SOURCES := $(wildcard *.cpp)
 OBJS := $(SOURCES:.cpp=.o)
 
 .SUFFIXES:

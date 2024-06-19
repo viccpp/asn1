@@ -26,7 +26,7 @@ public:
     // only to avoid compilation errors on explicit instantiation
     ostream_writer() : os(nullptr) {}
 
-    void write(uint8_t byte) { os->put(byte); }
+    void write(unsigned char byte) { os->put(byte); }
     void write(const void *bytes, std::size_t n)
         { os->write(reinterpret_cast<const char *>(bytes), n); }
 };
@@ -40,7 +40,7 @@ public:
     // only to avoid compilation errors on explicit instantiation
     istream_reader() : is(nullptr) {}
 
-    bool read(uint8_t &byte)
+    bool read(unsigned char &byte)
         { return static_cast<bool>(is->get(reinterpret_cast<char&>(byte))); }
     size_t read_max(void *bytes, size_t n)
     {

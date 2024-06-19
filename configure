@@ -5,7 +5,7 @@ export LANG=C
 
 usage() {
     cat <<EOF
-Usage: $1 [std={98|11|14|17}] [compiler={gcc|clang|intel}] [pic|--with-pic]"
+Usage: $1 [std={11|14|17}] [compiler={gcc|clang|intel}] [pic|--with-pic]"
     std=XX          - compile using C++XX mode [14 is default]
     compiler=CC     - compile using CC [gcc is default]
     --with-pic, pic  - compile with -fPIC
@@ -16,7 +16,6 @@ cleanup() { rm -f src/Makefile src/os_config.h test/Makefile; }
 die() { echo "ERROR: $1"; cleanup; exit 1; }
 CXX_TYPE=gcc
 CXX_STD=14
-LIBSUFF=$CXX_STD
 
 # Check params
 while [ "x$1" != x ]; do
@@ -36,12 +35,12 @@ while [ "x$1" != x ]; do
 done
 
 LIBNAME=lib__vic_asn1
+LIBSUFF=$CXX_STD
 OS=`uname`
 AR=ar
 CFLAGS="-pedantic-errors"
 CXX98_WARNS="-Wno-long-long"
 WARNS_ALL="-Wall"
-FIND_SRC_EXPR="-name '*.cpp'"
 
 case $CXX_TYPE in
     gcc)
@@ -54,6 +53,7 @@ case $CXX_TYPE in
     ;;
 esac
 if [ $CXX_STD = 98 ]; then
+    die "C++98 is unsupported"
     CFLAGS="$CFLAGS $CXX98_WARNS"
 fi
 CXX="$CXX -pthread"
@@ -98,7 +98,6 @@ s|@OS@|$OS|g
 s|@CXX@|$CXX|g
 s|@CFLAGS@|$CFLAGS|g
 s|@AR@|$AR|g
-s|@FIND_SRC_EXPR@|$FIND_SRC_EXPR|g
 " src/Makefile.in
 } > src/Makefile
 
