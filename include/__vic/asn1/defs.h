@@ -7,7 +7,6 @@
 #define __VIC_ASN1_DEFS_H
 
 #include<__vic/defs.h>
-#include<__vic/string_buffer.h>
 #include<string>
 
 namespace __vic { namespace asn1 {
@@ -140,13 +139,6 @@ void to_text_append(type_tag_t , std::string & );
 
 inline std::string to_text(type_tag_t t)
 { std::string res; to_text_append(t, res); return res; }
-
-inline __vic::string_buffer &operator<<(__vic::string_buffer &s, type_tag_t t)
-{ to_text_append(t, s); return s; }
-#if __cpp_rvalue_references
-inline __vic::string_buffer &&operator<<(__vic::string_buffer &&s, type_tag_t t)
-{ to_text_append(t, s); return std::move(s); }
-#endif
 
 }} // namespace
 
